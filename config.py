@@ -75,25 +75,25 @@ def configuration():
 		dueItem.setvar('isSubmitted', 'true')
 	elif query.startswith(confNames['confList'] + ' '):
 		userInput = query.replace(confNames['confList'] + ' ', '')
-		if not userInput.isnumeric() or len(userInput) != 7:
+		if not userInput.isnumeric():
 			userInput = '(Invalid input).'
 		listItem = wf3.add_item(title = 'Enter default list (Id): ' + userInput, subtitle = 'Save?', valid = True, arg = 'cu:config ' + query)
 		listItem.setvar('isSubmitted', 'true')
 	elif query.startswith(confNames['confSpace'] + ' '):
 		userInput = query.replace(confNames['confSpace'] + ' ', '')
-		if not userInput.isnumeric() or len(userInput) != 7:
+		if not userInput.isnumeric():
 			userInput = '(Invalid input).'
 		spaceItem = wf3.add_item(title = 'Enter space (Id): ' + userInput, subtitle = 'Save?', valid = True, arg = 'cu:config ' + query)
 		spaceItem.setvar('isSubmitted', 'true')
 	elif query.startswith(confNames['confTeam'] + ' '):
 		userInput = query.replace(confNames['confTeam'] + ' ', '')
-		if not userInput.isnumeric() or len(userInput) != 7:
+		if not userInput.isnumeric():
 			userInput = '(Invalid input).'
 		teamItem = wf3.add_item(title = 'Enter workspace (Id): ' + userInput, subtitle = 'Save?', valid = True, arg = 'cu:config ' + query)
 		teamItem.setvar('isSubmitted', 'true')
 	elif query.startswith(confNames['confProject'] + ' '):
 		userInput = query.replace(confNames['confProject'] + ' ', '')
-		if not userInput.isnumeric() or len(userInput) != 7:
+		if not userInput.isnumeric():
 			userInput = '(Invalid input).'
 		projectItem = wf3.add_item(title = 'Enter folder (Id): ' + userInput, subtitle = 'Save?', valid = True, arg = 'cu:config ' + query)
 		projectItem.setvar('isSubmitted', 'true')
@@ -138,7 +138,7 @@ def getConfigName(query):
 	'''
 	wf = Workflow()
 	log = wf.logger
-	hasValue = query.split(' ') > 1
+	hasValue = len(query.split(' ')) > 1
 	if hasValue:
 		# First element is our config name, whether there is a value or not
 		return query.split(' ')[1]

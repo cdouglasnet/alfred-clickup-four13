@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an Alfred workflow for ClickUp 2.0 integration, allowing users to quickly create and search tasks within ClickUp using Alfred. The workflow is written in Python 2.7 and uses the Alfred-Workflow library.
+This is an Alfred workflow for ClickUp 2.0 integration by Four13 Digital, allowing users to quickly create and search tasks within ClickUp using Alfred. The workflow is written in Python 3.9+ and uses the alfred-pyworkflow library.
 
 ## Key Architecture Components
 
@@ -50,8 +50,16 @@ There are no automated tests. To test:
   - `/api/v2/space/{space_id}/tag` - Get tags
   - `/api/v2/team/{team_id}/list` - Get lists
 
-### Python 2.7 Compatibility
-This project uses Python 2.7 (legacy). Key considerations:
-- Use `from __future__ import unicode_literals` 
-- Handle encoding with `sys.setdefaultencoding('utf-8')`
-- Use `reload(sys)` for encoding setup
+### Python 3.9+ Modern Implementation
+This project uses Python 3.9+ for modern macOS compatibility. Key features:
+- Native Unicode string handling (no encoding setup needed)
+- Modern exception handling and syntax
+- Compatible with macOS system Python 3.9.6+
+- Uses alfred-pyworkflow for Alfred 5+ compatibility
+
+## Project Information
+- **Author**: Greg Flint - Four13 Digital  
+- **Bundle ID**: com.four13digital.clickup
+- **Version**: 1.0.0
+- **Repository**: https://github.com/four13co/alfred-clickup-four13
+- **Website**: https://four13.digital
