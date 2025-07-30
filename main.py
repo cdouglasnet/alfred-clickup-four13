@@ -5,15 +5,12 @@
 #
 # GNU GPL v2.0 Licence. See https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 #
-from __future__ import unicode_literals
 import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
 import datetime
 import os
 import emoji
 import re
-from workflow import Workflow, Workflow3, ICON_CLOCK, ICON_WARNING, ICON_GROUP, ICON_SYNC, web, util # Alfred-Workflow
+from workflow import Workflow, ICON_CLOCK, ICON_WARNING, ICON_GROUP, ICON_SYNC, web, util # Alfred-Workflow
 from workflow.util import set_config, unset_config
 from workflow.update import Version
 from config import confNames, getConfigValue
@@ -377,7 +374,7 @@ def getContentFromInput(query):
 	inputContent = ''
 	hasContent = len(query.split(':')) > 1
 	if hasContent:
-		inputContent = query.split(':', 1)[1].split(' #', 1)[0].split(' @', 1)[0].split(' !', 1)[0].split(" +", 1)[0].strip().decode('utf-8') # Avoid adding #myTag, @due, !priority to the content text
+		inputContent = query.split(':', 1)[1].split(' #', 1)[0].split(' @', 1)[0].split(' !', 1)[0].split(" +", 1)[0].strip() # Avoid adding #myTag, @due, !priority to the content text
 	if DEBUG > 1:
 		log.debug('inputContent: ' + str(inputContent))
 
@@ -447,7 +444,7 @@ def getDueFromInput(query):
 	hasDefault = (getConfigValue(confNames['confDue']) is not None and getConfigValue(confNames['confDue']) != '')
 	naturalValue = ''
 	timeValue = ''
- 	hasValue = False
+	hasValue = False
 	isInputInteger = False
 	if hasTime or hasDefault:
 		inputDue = 0
@@ -603,7 +600,7 @@ def getPriorityFromInput(query):
 		log.debug('[ getPriorityFromInput() ] ')
 	inputPriority = None
 	hasPriority = len(query.split(' !', 2)) > 1
- 	isInputInteger = False
+	isInputInteger = False
 	if hasPriority:
 		isInputInteger = query.split(' !', 2)[1][:1].isnumeric()
 	if hasPriority and isInputInteger: # Priority is of only 1 character, so we can receive the 1st character of the second element. As such, any text after is ignored.
@@ -774,6 +771,6 @@ def main(wf):
 
 if __name__ == "__main__":
 	wf = Workflow(update_settings = UPDATE_SETTINGS)
-	wf3 = Workflow3(update_settings = UPDATE_SETTINGS)
+	wf3 = Workflow(update_settings = UPDATE_SETTINGS)
 	log = wf.logger
 	sys.exit(wf.run(main))

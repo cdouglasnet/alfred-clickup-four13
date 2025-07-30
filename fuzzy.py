@@ -35,7 +35,6 @@ their `title` field.
 
 """
 
-from __future__ import print_function, absolute_import
 
 import json
 import os
@@ -77,7 +76,7 @@ def fold_diacritics(u):
     """Remove diacritics from Unicode string."""
     u = normalize('NFD', u)
     s = u.encode('us-ascii', 'ignore')
-    return unicode(s)
+    return s.decode('us-ascii')
 
 
 def isascii(u):
@@ -87,11 +86,11 @@ def isascii(u):
 
 def decode(s):
     """Decode and NFC-normalise string."""
-    if not isinstance(s, unicode):
-        if isinstance(s, str):
+    if not isinstance(s, str):
+        if isinstance(s, bytes):
             s = s.decode('utf-8')
         else:
-            s = unicode(s)
+            s = str(s)
 
     return normalize('NFC', s)
 
@@ -311,7 +310,7 @@ class Cache(object):
 
             log('added session id %r to results', sid)
 
-            with open(self.cache_path, 'wb') as fp:
+            with open(self.cache_path, 'w') as fp:
                 json.dump(fb, fp)
                 log('cached script results to %r', self.cache_path)
 
@@ -335,7 +334,7 @@ class Cache(object):
         """Return cache path for this session."""
         if not self._cache_path:
             if not os.path.exists(self.cache_dir):
-                os.makedirs(self.cache_dir, 0700)
+                os.makedirs(self.cache_dir, 0o700)
                 log('created cache dir %r', self.cache_dir)
 
             self._cache_path = os.path.join(self.cache_dir,

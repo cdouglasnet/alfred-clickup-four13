@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # encoding: utf-8
 #
-# Copyright (c) 2022 Thomas Harr <xDevThomas@gmail.com>
-# Copyright (c) 2019 Dean Jackson <deanishe@deanishe.net>
+# Copyright (c) 2017 Dean Jackson <deanishe@deanishe.net>
 #
 # MIT Licence. See http://opensource.org/licenses/MIT
 #
@@ -11,7 +10,11 @@
 
 """A selection of helper functions useful for building workflows."""
 
+from __future__ import print_function, absolute_import
+
 import atexit
+from collections import namedtuple
+from contextlib import contextmanager
 import errno
 import fcntl
 import functools
@@ -20,31 +23,27 @@ import os
 import signal
 import subprocess
 import sys
-import time
-from collections import namedtuple
-from contextlib import contextmanager
 from threading import Event
+import time
 
 # JXA scripts to call Alfred's API via the Scripting Bridge
 # {app} is automatically replaced with "Alfred 3" or
 # "com.runningwithcrayons.Alfred" depending on version.
 #
 # Open Alfred in search (regular) mode
-JXA_SEARCH = 'Application({app}).search({arg});'
+JXA_SEARCH = "Application({app}).search({arg});"
 # Open Alfred's File Actions on an argument
-JXA_ACTION = 'Application({app}).action({arg});'
+JXA_ACTION = "Application({app}).action({arg});"
 # Open Alfred's navigation mode at path
-JXA_BROWSE = 'Application({app}).browse({arg});'
+JXA_BROWSE = "Application({app}).browse({arg});"
 # Set the specified theme
-JXA_SET_THEME = 'Application({app}).setTheme({arg});'
+JXA_SET_THEME = "Application({app}).setTheme({arg});"
 # Call an External Trigger
-JXA_TRIGGER = 'Application({app}).runTrigger({arg}, {opts});'
+JXA_TRIGGER = "Application({app}).runTrigger({arg}, {opts});"
 # Save a variable to the workflow configuration sheet/info.plist
-JXA_SET_CONFIG = 'Application({app}).setConfiguration({arg}, {opts});'
+JXA_SET_CONFIG = "Application({app}).setConfiguration({arg}, {opts});"
 # Delete a variable from the workflow configuration sheet/info.plist
-JXA_UNSET_CONFIG = 'Application({app}).removeConfiguration({arg}, {opts});'
-# Tell Alfred to reload a workflow from disk
-JXA_RELOAD_WORKFLOW = 'Application({app}).reloadWorkflow({arg});'
+JXA_UNSET_CONFIG = "Application({app}).removeConfiguration({arg}, {opts});"
 
 
 class AcquisitionError(Exception):
@@ -54,19 +53,19 @@ class AcquisitionError(Exception):
 AppInfo = namedtuple('AppInfo', ['name', 'path', 'bundleid'])
 """Information about an installed application.
 
-Returned by :func:`appinfo`. All attributes are str.
+Returned by :func:`appinfo`. All attributes are Unicode.
 
 .. py:attribute:: name
 
-    Name of the application, e.g. ``'Safari'``.
+    Name of the application, e.g. ``u'Safari'``.
 
 .. py:attribute:: path
 
-    Path to the application bundle, e.g. ``'/Applications/Safari.app'``.
+    Path to the application bundle, e.g. ``u'/Applications/Safari.app'``.
 
 .. py:attribute:: bundleid
 
-    Application's bundle ID, e.g. ``'com.apple.Safari'``.
+    Application's bundle ID, e.g. ``u'com.apple.Safari'``.
 
 """
 
@@ -75,18 +74,21 @@ def jxa_app_name():
     """Return name of application to call currently running Alfred.
 
     .. versionadded: 1.37
-    .. versionchanged:: 2.0
 
-    Returns 'com.runningwithcrayons.Alfred' the bundleID of Alfred 4+ versions
+    Returns 'Alfred 3' or 'com.runningwithcrayons.Alfred' depending
+    on which version of Alfred is running.
 
     This name is suitable for use with ``Application(name)`` in JXA.
 
     Returns:
-        str: bundleID.
+        unicode: Application name or ID.
 
     """
+    if os.getenv('alfred_version', '').startswith('3'):
+        # Alfred 3
+        return u'Alfred 3'
     # Alfred 4+
-    return 'com.runningwithcrayons.Alfred'
+    return u'com.runningwithcrayons.Alfred'
 
 
 def unicodify(s, encoding='utf-8', norm=None):
@@ -103,11 +105,11 @@ def unicodify(s, encoding='utf-8', norm=None):
         norm (None, optional): Normalisation form to apply to Unicode string.
 
     Returns:
-        str: Decoded, optionally normalised, Unicode string.
+        unicode: Decoded, optionally normalised, Unicode string.
 
     """
-    if not isinstance(s, str):
-        s = str(s, encoding)
+    if not isinstance(s, unicode):
+        s = unicode(s, encoding)
 
     if norm:
         from unicodedata import normalize
@@ -116,25 +118,50 @@ def unicodify(s, encoding='utf-8', norm=None):
     return s
 
 
+def utf8ify(s):
+    """Ensure string is a bytestring.
+
+    .. versionadded:: 1.31
+
+    Returns `str` objects unchanced, encodes `unicode` objects to
+    UTF-8, and calls :func:`str` on anything else.
+
+    Args:
+        s (object): A Python object
+
+    Returns:
+        str: UTF-8 string or string representation of s.
+
+    """
+    if isinstance(s, str):
+        return s
+
+    if isinstance(s, unicode):
+        return s.encode('utf-8')
+
+    return str(s)
+
+
 def applescriptify(s):
     """Escape string for insertion into an AppleScript string.
 
     .. versionadded:: 1.31
 
     Replaces ``"`` with `"& quote &"`. Use this function if you want
-    to insert a string into an AppleScript script:
 
-        >>> applescriptify('g "python" test')
+    to insert a string into an AppleScript script:
+        >>> query = 'g "python" test'
+        >>> applescriptify(query)
         'g " & quote & "python" & quote & "test'
 
     Args:
-        s (str): Unicode string to escape.
+        s (unicode): Unicode string to escape.
 
     Returns:
-        str: Escaped string.
+        unicode: Escaped string
 
     """
-    return s.replace('"', '" & quote & "')
+    return s.replace(u'"', u'" & quote & "')
 
 
 def run_command(cmd, **kwargs):
@@ -146,14 +173,14 @@ def run_command(cmd, **kwargs):
     all arguments are encoded to UTF-8 first.
 
     Args:
-        cmd (list): Command arguments to pass to :func:`~subprocess.check_output`.
-        **kwargs: Keyword arguments to pass to :func:`~subprocess.check_output`.
+        cmd (list): Command arguments to pass to ``check_output``.
+        **kwargs: Keyword arguments to pass to ``check_output``.
 
     Returns:
-        str: Output returned by :func:`~subprocess.check_output`.
+        str: Output returned by ``check_output``.
 
     """
-    cmd = [str(s) for s in cmd]
+    cmd = [utf8ify(s) for s in cmd]
     return subprocess.check_output(cmd, **kwargs)
 
 
@@ -170,7 +197,6 @@ def run_applescript(script, *args, **kwargs):
         script (str, optional): Filepath of script or code to run.
         *args: Optional command-line arguments to pass to the script.
         **kwargs: Pass ``lang`` to run a language other than AppleScript.
-            Any other keyword arguments are passed to :func:`run_command`.
 
     Returns:
         str: Output of run command.
@@ -216,8 +242,8 @@ def run_trigger(name, bundleid=None, arg=None):
 
     .. versionadded:: 1.31
 
-    If ``bundleid`` is not specified, the bundle ID of the calling
-    workflow is used.
+    If ``bundleid`` is not specified, reads the bundle ID of the current
+    workflow from Alfred's environment variables.
 
     Args:
         name (str): Name of External Trigger to call.
@@ -238,28 +264,10 @@ def run_trigger(name, bundleid=None, arg=None):
     run_applescript(script, lang='JavaScript')
 
 
-def set_theme(theme_name):
-    """Change Alfred's theme.
-
-    .. versionadded:: 1.39.0
-
-    Args:
-        theme_name (str): Name of theme Alfred should use.
-
-    """
-    appname = jxa_app_name()
-    script = JXA_SET_THEME.format(app=json.dumps(appname),
-                                  arg=json.dumps(theme_name))
-    run_applescript(script, lang='JavaScript')
-
-
 def set_config(name, value, bundleid=None, exportable=False):
     """Set a workflow variable in ``info.plist``.
 
     .. versionadded:: 1.33
-
-    If ``bundleid`` is not specified, the bundle ID of the calling
-    workflow is used.
 
     Args:
         name (str): Name of variable to set.
@@ -289,9 +297,6 @@ def unset_config(name, bundleid=None):
 
     .. versionadded:: 1.33
 
-    If ``bundleid`` is not specified, the bundle ID of the calling
-    workflow is used.
-
     Args:
         name (str): Name of variable to delete.
         bundleid (str, optional): Bundle ID of workflow variable belongs to.
@@ -308,71 +313,6 @@ def unset_config(name, bundleid=None):
     run_applescript(script, lang='JavaScript')
 
 
-def search_in_alfred(query=None):
-    """Open Alfred with given search query.
-
-    .. versionadded:: 1.39.0
-
-    Omit ``query`` to simply open Alfred's main window.
-
-    Args:
-        query (str, optional): Search query.
-
-    """
-    query = query or ''
-    appname = jxa_app_name()
-    script = JXA_SEARCH.format(app=json.dumps(appname), arg=json.dumps(query))
-    run_applescript(script, lang='JavaScript')
-
-
-def browse_in_alfred(path):
-    """Open Alfred's filesystem navigation mode at ``path``.
-
-    .. versionadded:: 1.39.0
-
-    Args:
-        path (str): File or directory path.
-
-    """
-    appname = jxa_app_name()
-    script = JXA_BROWSE.format(app=json.dumps(appname), arg=json.dumps(path))
-    run_applescript(script, lang='JavaScript')
-
-
-def action_in_alfred(paths):
-    """Action the give filepaths in Alfred.
-
-    .. versionadded:: 1.39.0
-
-    Args:
-        paths (list): Unicode paths to files/directories to action.
-
-    """
-    appname = jxa_app_name()
-    script = JXA_ACTION.format(app=json.dumps(appname), arg=json.dumps(paths))
-    run_applescript(script, lang='JavaScript')
-
-
-def reload_workflow(bundleid=None):
-    """Tell Alfred to reload a workflow from disk.
-
-    .. versionadded:: 1.39.0
-
-    If ``bundleid`` is not specified, the bundle ID of the calling
-    workflow is used.
-
-    Args:
-        bundleid (str, optional): Bundle ID of workflow to reload.
-
-    """
-    bundleid = bundleid or os.getenv('alfred_workflow_bundleid')
-    appname = jxa_app_name()
-    script = JXA_RELOAD_WORKFLOW.format(app=json.dumps(appname),
-                                        arg=json.dumps(bundleid))
-
-    run_applescript(script, lang='JavaScript')
-
-
 def appinfo(name):
     """Get information about an installed application.
 
@@ -385,21 +325,17 @@ def appinfo(name):
         AppInfo: :class:`AppInfo` tuple or ``None`` if app isn't found.
 
     """
-    cmd = [
-        'mdfind',
-        '-onlyin', '/Applications',
-        '-onlyin', '/System/Applications',
-        '-onlyin', os.path.expanduser('~/Applications'),
-        '(kMDItemContentTypeTree == com.apple.application &&'
-        '(kMDItemDisplayName == "{0}" || kMDItemFSName == "{0}.app"))'
-        .format(name)
-    ]
+    cmd = ['mdfind', '-onlyin', '/Applications',
+           '-onlyin', os.path.expanduser('~/Applications'),
+           '(kMDItemContentTypeTree == com.apple.application &&'
+           '(kMDItemDisplayName == "{0}" || kMDItemFSName == "{0}.app"))'
+           .format(name)]
 
     output = run_command(cmd).strip()
     if not output:
         return None
 
-    path = str(output, 'utf-8').split('\n')[0]
+    path = output.split('\n')[0]
 
     cmd = ['mdls', '-raw', '-name', 'kMDItemCFBundleIdentifier', path]
     bid = run_command(cmd).strip()
@@ -419,7 +355,7 @@ def atomic_writer(fpath, mode):
     succeeds. The data is first written to a temporary file.
 
     :param fpath: path of file to write to.
-    :type fpath: ``str``
+    :type fpath: ``unicode``
     :param mode: sames as for :func:`open`
     :type mode: string
 
@@ -451,7 +387,7 @@ class LockFile(object):
     >>>         fp.write(data)
 
     Args:
-        protected_path (str): File to protect with a lockfile
+        protected_path (unicode): File to protect with a lockfile
         timeout (float, optional): Raises an :class:`AcquisitionError`
             if lock cannot be acquired within this number of seconds.
             If ``timeout`` is 0 (the default), wait forever.
@@ -461,7 +397,7 @@ class LockFile(object):
     Attributes:
         delay (float): How often to check (in seconds) whether the lock
             can be acquired.
-        lockfile (str): Path of the lockfile.
+        lockfile (unicode): Path of the lockfile.
         timeout (float): How long to wait to acquire the lock.
 
     """
@@ -575,7 +511,7 @@ class uninterruptible(object):
     the SIGTERM will be caught and handled after your function has
     finished executing.
 
-    Alfred-PyWorkflow uses this internally to ensure its settings, data
+    Alfred-Workflow uses this internally to ensure its settings, data
     and cache writes complete.
 
     """

@@ -5,12 +5,11 @@
 #
 # GNU GPL v2.0 Licence. See https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 #
-from __future__ import unicode_literals
 import sys
 import datetime
 import emoji
 from main import DEBUG
-from workflow import Workflow, Workflow3, ICON_WEB, ICON_CLOCK, ICON_WARNING, ICON_GROUP, web
+from workflow import Workflow, ICON_WEB, ICON_CLOCK, ICON_WARNING, ICON_GROUP, web
 from config import confNames, getConfigValue
 
 
@@ -28,7 +27,7 @@ def getTasks():
 		log.debug('[ Calling API to list tasks ]')
 	url = 'https://api.clickup.com/api/v2/team/' + getConfigValue(confNames['confTeam']) + '/task'
 	params = {}
-	wf3 = Workflow3()
+	wf3 = Workflow()
 
 	if getConfigValue(confNames['confHierarchyLimit']):
 		if 'space' in getConfigValue(confNames['confHierarchyLimit']):

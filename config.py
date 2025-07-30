@@ -5,9 +5,8 @@
 #
 # GNU GPL v2.0 Licence. See https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 #
-from __future__ import unicode_literals
 import sys
-from workflow import Workflow, Workflow3, ICON_WARNING, web, PasswordNotFound
+from workflow import Workflow, ICON_WARNING, web, PasswordNotFound
 
 confNames = {'confApi': 'apiKey', 'confDue': 'dueDate', 'confList': 'list', 'confSpace': 'space', 'confTeam': 'workspace', 'confProject': 'folder', 'confNotification': 'notification', 'confDefaultTag': 'defaultTag', 'confHierarchyLimit': 'hierarchyLimit', 'confUser': 'userId'}
 
@@ -210,6 +209,6 @@ def checkClickUpId(idType, configKey):
 
 if __name__ == "__main__":
 	wf = Workflow()
-	wf3 = Workflow3()
+	wf3 = Workflow()
 	log = wf.logger
 	sys.exit(wf.run(main))

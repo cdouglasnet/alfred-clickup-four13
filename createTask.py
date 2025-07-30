@@ -5,7 +5,6 @@
 #
 # GNU GPL v2.0 Licence. See https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 #
-from __future__ import unicode_literals
 import sys
 # import argparse
 import os
@@ -13,7 +12,7 @@ import json
 import datetime
 from main import DEBUG, formatNotificationText
 from config import confNames, getConfigValue
-from workflow import Workflow, Workflow3, web
+from workflow import Workflow, web
 from workflow.notify import notify
 
 
@@ -130,6 +129,6 @@ def createTask(inputName, inputContent, inputDue, inputPriority, inputTags, inpu
 
 if __name__ == "__main__":
 	wf = Workflow()
-	wf3 = Workflow3()
+	wf3 = Workflow()
 	log = wf.logger
 	sys.exit(wf.run(main))

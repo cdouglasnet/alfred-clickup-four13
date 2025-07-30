@@ -389,7 +389,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>/usr/bin/python -O createTask.py "$1" "$optInput"</string>
+				<string>/usr/bin/python3 -O createTask.py "$1" "$optInput"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -445,7 +445,7 @@
 				<key>runningsubtext</key>
 				<string></string>
 				<key>script</key>
-				<string>/usr/bin/python -O main.py "$1" "$optInput"</string>
+				<string>/usr/bin/python3 -O main.py "$1" "$optInput"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -672,7 +672,7 @@
 				<string>export query="$1"
 export adj_bonus=15
 
-./fuzzy.py /usr/bin/python -O getTasks.py "$1"</string>
+./fuzzy.py /usr/bin/python3 -O getTasks.py "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -755,7 +755,7 @@ export adj_bonus=15
 export query="$1"
 export adj_bonus=15
 
-./fuzzy.py /usr/bin/python -O getTasks.py "$1" "$mode"</string>
+./fuzzy.py /usr/bin/python3 -O getTasks.py "$1" "$mode"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -845,7 +845,7 @@ export adj_bonus=15
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>/usr/bin/python -O closeTask.py "$1"</string>
+				<string>/usr/bin/python3 -O closeTask.py "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -906,7 +906,7 @@ export adj_bonus=15
 export query="$1"
 export adj_bonus=15
 
-./fuzzy.py /usr/bin/python -O getTasks.py "$1" "$mode"</string>
+./fuzzy.py /usr/bin/python3 -O getTasks.py "$1" "$mode"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -935,7 +935,7 @@ export adj_bonus=15
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>/usr/bin/python -O closeTask.py "$1"</string>
+				<string>/usr/bin/python3 -O closeTask.py "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -1020,7 +1020,7 @@ export adj_bonus=15
 				<key>runningsubtext</key>
 				<string>load</string>
 				<key>script</key>
-				<string>/usr/bin/python -O config.py "$1"</string>
+				<string>/usr/bin/python3 -O config.py "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -1064,7 +1064,7 @@ export adj_bonus=15
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>/usr/bin/python -O configStore.py "$1"</string>
+				<string>/usr/bin/python3 -O configStore.py "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
