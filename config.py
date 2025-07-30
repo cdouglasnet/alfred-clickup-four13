@@ -40,7 +40,14 @@ def configuration():
 		defaultTagValue = getConfigValue(confNames['confDefaultTag'])
 		hierarchyLimitValue = getConfigValue(confNames['confHierarchyLimit'])
 
-		wf3.add_item(title = 'Set API key' + (' (' + apiKeyValue + ')' if apiKeyValue else ''), subtitle = 'Your personal ClickUp API key/token.', valid = False, autocomplete = confNames['confApi'] + ' ')
+		# Mask API key for security - only show first 5 and last 4 characters
+		maskedApiKey = ''
+		if apiKeyValue:
+			if len(apiKeyValue) > 12:
+				maskedApiKey = apiKeyValue[:5] + '...' + apiKeyValue[-4:]
+			else:
+				maskedApiKey = '***'
+		wf3.add_item(title = 'Set API key' + (' (' + maskedApiKey + ')' if maskedApiKey else ''), subtitle = 'Your personal ClickUp API key/token.', valid = False, autocomplete = confNames['confApi'] + ' ')
 		wf3.add_item(title = 'Set default due date' + (' (' + dueValue + ')' if dueValue else ''), subtitle = 'e.g. m30 (in 30 minutes), h2 (in two hours), d1 (in one day), w1 (in one week).', valid = False, autocomplete = confNames['confDue'] + ' ')
 		wf3.add_item(title = 'Set ClickUp workspace' + (' (' + teamValue + ')' if teamValue else ''), subtitle = 'Workspace that defines which tasks can be searched.', valid = False, autocomplete = confNames['confTeam'] + ' ')
 		wf3.add_item(title = 'Set ClickUp space' + (' (' + spaceValue + ')' if spaceValue else ''), subtitle = 'Space that defines your available labels and priorities.', valid = False, autocomplete = confNames['confSpace'] + ' ')

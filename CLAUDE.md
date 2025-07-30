@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is an Alfred workflow for ClickUp 2.0 integration by Four13 Digital, allowing users to quickly create and search tasks within ClickUp using Alfred. The workflow is written in Python 3.9+ and uses the alfred-pyworkflow library.
 
+**IMPORTANT**: This workflow is designed for public distribution. It must NOT contain any hardcoded API keys, credentials, or personal data. All sensitive information must be stored securely in the macOS Keychain or user settings.
+
 ## Key Architecture Components
 
 ### Main Entry Points
@@ -26,6 +28,12 @@ This is an Alfred workflow for ClickUp 2.0 integration by Four13 Digital, allowi
 - API keys are stored in macOS Keychain for security
 - Other settings stored in Alfred workflow settings
 - Configuration accessed via `getConfigValue()` function
+
+### Security Requirements
+- **NEVER hardcode API keys or credentials in source code**
+- **ALWAYS mask sensitive data when displaying in UI** (show only partial values)
+- **Store all sensitive data in macOS Keychain** using `wf.save_password()`
+- **This is redistributable software** - assume all code will be public
 
 ## Common Development Tasks
 
