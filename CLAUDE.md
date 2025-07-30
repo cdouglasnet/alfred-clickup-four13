@@ -57,6 +57,79 @@ This project uses Python 3.9+ for modern macOS compatibility. Key features:
 - Compatible with macOS system Python 3.9.6+
 - Uses alfred-pyworkflow for Alfred 5+ compatibility
 
+## Critical Lessons Learned
+
+### Workflow Packaging and Testing
+**IMPORTANT**: When building/modifying the workflow, always test the actual `.alfredworkflow` file installation, not just local Python execution. Issues that work locally may fail in Alfred due to:
+- Module import paths 
+- Directory structure preservation
+- Python environment differences
+
+### Known Issues and Fixes
+
+#### 1. ClickUp ID Length Validation
+- **Issue**: Original code enforced 7-character limit on all ClickUp IDs
+- **Fix**: Remove `len(userInput) != 7` checks from `config.py`
+- **Location**: Lines ~78, 84, 90, 96 in config.py
+- **Why**: Modern ClickUp IDs can be 14+ characters (e.g., `90170402244889`)
+
+#### 2. Configuration Storage Bug
+- **Issue**: `config.py` line 141 had `query.split(' ') > 1` causing TypeError
+- **Fix**: Change to `len(query.split(' ')) > 1`
+- **Why**: Can't compare list to int in Python
+
+#### 3. NoneType String Concatenation
+- **Issue**: Config values returning `None` cause errors when concatenated
+- **Fix**: Use `getConfigValue(...) or ''` to ensure string type
+- **Why**: Python 3 is stricter about type operations
+
+### Building and Packaging
+
+#### Build Script (`build.sh`)
+```bash
+#!/bin/bash
+# Critical: Preserve directory structure!
+cp -R workflow "$BUILD_DIR/"  # NOT cp -R workflow/* 
+cp -R emoji "$BUILD_DIR/"     # Directories must remain intact
+```
+
+#### Common Packaging Mistakes
+1. **DON'T** flatten directory structures - modules won't import
+2. **DON'T** include `.git`, `__pycache__`, or test files
+3. **DO** test the packaged workflow file, not just local execution
+4. **DO** use `open -a "Alfred 5" ClickUp.alfredworkflow` to install
+
+### Debugging Import Errors
+When seeing "Unable to import" errors in Alfred:
+1. Check Alfred's debug console for the actual error
+2. Common causes:
+   - Missing module directories (e.g., `emoji/` not included)
+   - Incorrect import statements (`from workflow.util` vs `from .util`)
+   - Module not found in packaged workflow
+3. Test by unpacking the workflow and running directly:
+   ```bash
+   unzip ClickUp.alfredworkflow
+   cd ClickUp
+   /usr/bin/python3 main.py "test"
+   ```
+
+### Configuration Testing
+To verify configuration is saved correctly:
+```python
+from workflow import Workflow
+wf = Workflow()
+# Check API key in keychain
+api_key = wf.get_password('clickUpAPI')
+# Check settings
+print(wf.settings.get('list'))
+```
+
+### Best Practices
+1. **Incremental Changes**: Make one fix at a time and test
+2. **Preserve Working State**: Keep a known-working `.alfredworkflow` file
+3. **Test Installation**: Always test by installing the workflow, not just running locally
+4. **Version Control**: Tag working versions before making changes
+
 ## Project Information
 - **Author**: Greg Flint - Four13 Digital  
 - **Bundle ID**: com.four13digital.clickup
