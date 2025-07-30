@@ -11,3 +11,4 @@ workflow/.alfredversionchecked
 *.code-workspace
 workflow-build.py
 requirements/
+.DS_Store
