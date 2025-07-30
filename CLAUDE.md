@@ -59,6 +59,12 @@ This project uses Python 3.9+ for modern macOS compatibility. Key features:
 
 ## Critical Lessons Learned
 
+### Successful Workflow Build Process
+1. **Use the build script**: `bash build.sh`
+2. **Verify the build**: `unzip -l ClickUp.alfredworkflow | head`
+3. **Install with Alfred**: `open -a "Alfred 5" ClickUp.alfredworkflow`
+4. **Test configuration**: Try `cu:config` to ensure no import errors
+
 ### Workflow Packaging and Testing
 **IMPORTANT**: When building/modifying the workflow, always test the actual `.alfredworkflow` file installation, not just local Python execution. Issues that work locally may fail in Alfred due to:
 - Module import paths 
@@ -89,29 +95,57 @@ This project uses Python 3.9+ for modern macOS compatibility. Key features:
 ```bash
 #!/bin/bash
 # Critical: Preserve directory structure!
-cp -R workflow "$BUILD_DIR/"  # NOT cp -R workflow/* 
-cp -R emoji "$BUILD_DIR/"     # Directories must remain intact
+rsync -a --exclude='__pycache__' --exclude='*.pyc' workflow/ "$BUILD_DIR/workflow/"
+# NOT cp -R which includes cache files
+
+# CRITICAL: Zip files at root level!
+cd "$BUILD_DIR"
+zip -r "$OLDPWD/$WORKFLOW_NAME.alfredworkflow" .
+# NOT: zip -r name.alfredworkflow foldername/
 ```
 
 #### Common Packaging Mistakes
 1. **DON'T** flatten directory structures - modules won't import
-2. **DON'T** include `.git`, `__pycache__`, or test files
-3. **DO** test the packaged workflow file, not just local execution
-4. **DO** use `open -a "Alfred 5" ClickUp.alfredworkflow` to install
+2. **DON'T** include `.git`, `__pycache__`, `*.pyc`, or `.DS_Store` files
+3. **DON'T** create workflow with files in a subfolder - Alfred expects files at root
+4. **DO** test the packaged workflow file, not just local execution
+5. **DO** use `open -a "Alfred 5" ClickUp.alfredworkflow` to install
+6. **DO** verify zip structure with `unzip -l workflow.alfredworkflow | head`
 
 ### Debugging Import Errors
-When seeing "Unable to import" errors in Alfred:
-1. Check Alfred's debug console for the actual error
-2. Common causes:
-   - Missing module directories (e.g., `emoji/` not included)
-   - Incorrect import statements (`from workflow.util` vs `from .util`)
-   - Module not found in packaged workflow
-3. Test by unpacking the workflow and running directly:
+
+#### "Unable to import" in Alfred
+When Alfred shows "The workflow you are trying to import is invalid or corrupted":
+
+1. **Check zip structure** (MOST COMMON ISSUE):
    ```bash
-   unzip ClickUp.alfredworkflow
-   cd ClickUp
+   unzip -l ClickUp.alfredworkflow | head
+   # Files should be at root: info.plist, main.py, etc.
+   # NOT: ClickUp/info.plist, ClickUp/main.py
+   ```
+
+2. **Verify info.plist**:
+   ```bash
+   plutil -lint info.plist  # Should output "OK"
+   ```
+
+3. **Check for Python syntax errors in info.plist**:
+   ```bash
+   grep -n "usr/bin/python" info.plist
+   # Look for malformed entries like: ./fuzzy.py /usr/bin/python3
+   ```
+
+4. **Test by unpacking and running directly**:
+   ```bash
+   unzip ClickUp.alfredworkflow -d test
+   cd test
    /usr/bin/python3 main.py "test"
    ```
+
+#### Other Import Errors
+- Missing module directories (e.g., `emoji/` not included)
+- Incorrect import statements (`from workflow.util` vs `from .util`)
+- Python cache files (`__pycache__`) causing conflicts
 
 ### Configuration Testing
 To verify configuration is saved correctly:

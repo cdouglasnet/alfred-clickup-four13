@@ -13,23 +13,31 @@ BUILD_DIR="$TEMP_DIR/$WORKFLOW_NAME"
 
 # Copy all necessary files
 mkdir -p "$BUILD_DIR"
-cp -R *.py *.png icon.png info.plist "$BUILD_DIR/"
-cp -R workflow/ emoji/ fuzzy.py "$BUILD_DIR/"
-cp -R requests/ urllib3/ certifi/ chardet/ idna/ "$BUILD_DIR/"
+
+# Copy Python files and images
+cp *.py "$BUILD_DIR/" 2>/dev/null || true
+cp *.png "$BUILD_DIR/" 2>/dev/null || true
+cp info.plist "$BUILD_DIR/"
+
+# Copy directories with all subdirectories preserved, excluding __pycache__
+rsync -a --exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' workflow/ "$BUILD_DIR/workflow/"
+rsync -a --exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' emoji/ "$BUILD_DIR/emoji/"
+rsync -a --exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' requests/ "$BUILD_DIR/requests/"
+rsync -a --exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' urllib3/ "$BUILD_DIR/urllib3/"
+rsync -a --exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' certifi/ "$BUILD_DIR/certifi/"
+rsync -a --exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' chardet/ "$BUILD_DIR/chardet/"
+rsync -a --exclude='__pycache__' --exclude='*.pyc' --exclude='.DS_Store' idna/ "$BUILD_DIR/idna/"
 
 # Update version in info.plist if needed
 sed -i '' "s/<string>1.0.0<\/string>/<string>$VERSION<\/string>/g" "$BUILD_DIR/info.plist"
 
 # Create the .alfredworkflow file (just a zip)
-cd "$TEMP_DIR"
-zip -r "$WORKFLOW_NAME.alfredworkflow" "$WORKFLOW_NAME"
-
-# Move to original directory
-mv "$WORKFLOW_NAME.alfredworkflow" "$OLDPWD/"
+cd "$BUILD_DIR"
+zip -r "$OLDPWD/$WORKFLOW_NAME.alfredworkflow" .
 
 # Cleanup
 rm -rf "$TEMP_DIR"
 
 echo "✓ Built $WORKFLOW_NAME.alfredworkflow"
 echo "  Version: $VERSION"
-echo "  Location: $(pwd)/$WORKFLOW_NAME.alfredworkflow"
+echo "  Location: $OLDPWD/$WORKFLOW_NAME.alfredworkflow"
