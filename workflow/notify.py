@@ -241,7 +241,7 @@ def notify(title='', subtitle='', message='', sound=None):
     Returns:
         bool: ``True`` if notification was posted, else ``False``.
     """
-    if message == '':
+    if not message or not message.strip():
         raise ValueError('Empty notification message')
 
     sound = validate_sound(sound) or ''

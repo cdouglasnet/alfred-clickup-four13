@@ -306,6 +306,11 @@ def formatNotificationText(inputContent, inputDue, inputTags, inputPriority, ava
 
 	if DEBUG > 0:
 		log.debug('[ formatNotificationText() ] ')
+		log.debug('inputContent type: %s, value: "%s"' % (type(inputContent), inputContent))
+		log.debug('inputDue type: %s, value: "%s"' % (type(inputDue), inputDue))
+		log.debug('inputTags type: %s, value: %s' % (type(inputTags), inputTags))
+		log.debug('inputPriority type: %s, value: %s' % (type(inputPriority), inputPriority))
+		log.debug('availableListsIdName type: %s, value: %s' % (type(availableListsIdName), availableListsIdName))
 	notificationPriority, notificationTag, notificationBracketOpen, notificationBracketClose, notificationSeparator = '', '', '', '', ''
 	if inputPriority:
 		notificationPriority = emoji.emojize(':exclamation_mark:') + str(inputPriority)
@@ -323,7 +328,12 @@ def formatNotificationText(inputContent, inputDue, inputTags, inputPriority, ava
 	if inputPriority != None and hasTags:
 		notificationSeparator = ', '
 	if inputDue and inputDue != 'None':
-		inputDue = emoji.emojize(':calendar:') + formatDate(inputDue)
+		try:
+			inputDue = emoji.emojize(':calendar:') + formatDate(inputDue)
+		except Exception as e:
+			if DEBUG > 0:
+				log.debug('Error formatting date: %s' % str(e))
+			inputDue = ''
 	else:
 		inputDue = ''
 
@@ -331,7 +341,34 @@ def formatNotificationText(inputContent, inputDue, inputTags, inputPriority, ava
 	if lineBreaks:
 		br = '\n'
 
-	return inputContent + ('  ' if inputContent != '' else '') + br + inputDue + notificationBracketOpen + notificationPriority + notificationSeparator + notificationTag + ' ' + (emoji.emojize(':spiral_notepad:') + str(next(iter(availableListsIdName))) if availableListsIdName != None else '') + notificationBracketClose
+	# Ensure all parts are strings
+	parts = [
+		str(inputContent) if inputContent else '',
+		'  ' if inputContent else '',
+		str(br) if inputContent else '',  # Only add line break if there's content
+		str(inputDue) if inputDue else '',
+		str(notificationBracketOpen),
+		str(notificationPriority),
+		str(notificationSeparator),
+		str(notificationTag),
+		' ' if notificationPriority or notificationTag or (availableListsIdName and len(availableListsIdName) > 0) else '',  # Only add space if there's something to separate
+		emoji.emojize(':spiral_notepad:') + str(next(iter(availableListsIdName))) if availableListsIdName and len(availableListsIdName) > 0 else '',
+		str(notificationBracketClose)
+	]
+	
+	result = ''.join(parts)
+	
+	# Debug logging
+	if DEBUG > 0:
+		log.debug('formatNotificationText result: "%s"' % result)
+		log.debug('result.strip(): "%s"' % result.strip())
+		log.debug('len(result): %d' % len(result))
+	
+	# Ensure we never return an empty string for notifications
+	if not result or not result.strip():
+		result = 'Task created successfully'
+	
+	return result
 
 
 def formatDate(dateTime):

@@ -52,7 +52,17 @@ def getTasks():
 		params['due_date_lt'] = todayEndOfDayMs
 	else:
 		log.debug('[ Mode: List tasks (cul) ]')
-		params['tags[]'] = getConfigValue(confNames['confDefaultTag'])
+		defaultTag = getConfigValue(confNames['confDefaultTag'])
+		if not defaultTag:
+			wf3.add_item(
+				title = 'No default tag configured',
+				subtitle = 'Use "cu:config" to set a default tag before using this command',
+				valid = False,
+				icon = 'error.png'
+			)
+			wf3.send_feedback()
+			exit()
+		params['tags[]'] = defaultTag
 	headers = {}
 	headers['Authorization'] = getConfigValue(confNames['confApi'])
 	headers['Content-Type'] = 'application/json'

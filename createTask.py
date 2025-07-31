@@ -122,7 +122,7 @@ def createTask(inputName, inputContent, inputDue, inputPriority, inputTags, inpu
 	# If user pressed 'opt' (optInput == true), we do not want to show a notification, as the task is opened in the browser
 	hasUserNotPressedOpt = 'optInput' not in os.environ or os.environ['optInput'] == 'false'
 	if getConfigValue(confNames['confNotification']) == 'true' and (hasUserNotPressedOpt):
-		notify('Created: ' + inputName, formatNotificationText(inputContent, inputDue, inputTags, inputPriority, inputList, None, True))
+		notify('Task Created', inputName, formatNotificationText(inputContent, inputDue, inputTags, inputPriority, None, False))
 	elif 'optInput' in os.environ and os.environ['optInput'] == 'true':
 		print(result['url'])
 
