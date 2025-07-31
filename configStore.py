@@ -81,7 +81,7 @@ def updateConfiguration():
 			'hierarchyLimit': 'Hierarchy Limit',
 			'userId': 'User ID'
 		}
-		display_name = friendly_names.get(configName, configName)
+		display_name = friendly_names.get(configName, configName or 'Setting')
 		
 		# Special handling for clearing values
 		if userInput.strip() == '':
