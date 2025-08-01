@@ -2,9 +2,10 @@
 
 **Streamline your ClickUp task management directly from Alfred**
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/four13co/alfred-clickup-four13/releases)
+[![Build Status](https://github.com/four13co/alfred-clickup-four13/actions/workflows/build-release.yml/badge.svg)](https://github.com/four13co/alfred-clickup-four13/actions)
+[![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)](https://github.com/four13co/alfred-clickup-four13/releases)
 [![Python](https://img.shields.io/badge/python-3.9+-green.svg)](https://python.org)
-[![Alfred](https://img.shields.io/badge/alfred-4%2B-purple.svg)](https://alfredapp.com)
+[![Alfred](https://img.shields.io/badge/alfred-5%2B-purple.svg)](https://alfredapp.com)
 [![License](https://img.shields.io/badge/license-GPL%20v2.0-red.svg)](LICENSE)
 
 *Created by [Greg Flint](https://github.com/gregflint) • [Four13 Digital](https://github.com/four13co)*

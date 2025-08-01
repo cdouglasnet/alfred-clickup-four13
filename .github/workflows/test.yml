@@ -1,0 +1,54 @@
+name: Test Workflow
+
+on:
+  pull_request:
+    branches: [ master, main, develop ]
+  push:
+    branches: [ develop ]
+
+jobs:
+  test:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Validate info.plist
+      run: |
+        echo "Validating info.plist..."
+        plutil -lint info.plist
+        
+    - name: Check Python syntax
+      run: |
+        echo "Checking Python syntax..."
+        python3 -m py_compile *.py
+        python3 -m py_compile workflow/*.py
+        echo "✅ All Python files have valid syntax"
+        
+    - name: Test build script
+      run: |
+        chmod +x build.sh
+        ./build.sh
+        test -f ClickUp.alfredworkflow || exit 1
+        
+    - name: Verify workflow structure
+      run: |
+        echo "Verifying workflow structure..."
+        unzip -l ClickUp.alfredworkflow | grep -E "(info.plist|icon.png|main.py|getTasks.py|config.py)"
+        echo "✅ Workflow structure verified"
+        
+    - name: Check for hardcoded credentials
+      run: |
+        echo "Scanning for hardcoded credentials..."
+        # Check for potential API keys (pk_ prefix for ClickUp)
+        if grep -r "pk_[0-9A-Za-z_]\{20,\}" --include="*.py" --include="*.plist" . ; then
+          echo "❌ Found potential hardcoded API keys!"
+          exit 1
+        fi
+        echo "✅ No hardcoded credentials found"
