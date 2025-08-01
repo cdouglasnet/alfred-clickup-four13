@@ -46,6 +46,13 @@ Workspace (Team)
 - **Finding**: No dedicated chat space search API found
 - **Note**: Chat appears to be integrated within tasks/comments rather than as separate searchable entities
 
+#### Docs (v3 API)
+- **Endpoint**: `GET /api/v3/workspaces/{workspaceId}/docs`
+- **Description**: Lists docs in workspace that user can access
+- **Search params**: None documented - appears to be list-only
+- **Returns**: Array of doc objects
+- **Limitation**: No query/search parameter for filtering by name
+
 ### 3. Search Limitations
 
 1. **No Universal Search**: ClickUp API v2 doesn't provide a universal search endpoint that searches across all entity types
@@ -66,19 +73,25 @@ Workspace (Team)
 ### Phase 1: Enhanced Entity Search
 1. Add configuration option: `searchEntities` with options:
    - `tasks` (default, current behavior)
-   - `all` (tasks + folders + spaces)
+   - `all` (tasks + folders + spaces + docs)
    
 2. Modify `getTasks.py` to:
    - Fetch tasks (existing functionality)
    - If `searchEntities=all`, also fetch:
-     - All spaces from workspace
-     - All folders from configured space
+     - All spaces from workspace (v2)
+     - All folders from configured space (v2)
+     - All docs from workspace (v3 - first v3 endpoint!)
    - Combine results with type indicators
 
 3. Update result display:
-   - Prefix items with type: `[Task]`, `[Folder]`, `[Space]`
+   - Prefix items with type: `[Task]`, `[Folder]`, `[Space]`, `[Doc]`
    - Use different icons for each type
-   - Folders/Spaces open in ClickUp web when selected
+   - Folders/Spaces/Docs open in ClickUp web when selected
+
+4. Handle mixed API versions:
+   - Use v2 for tasks/folders/spaces
+   - Use v3 for docs (requires workspace ID instead of team ID)
+   - Ensure proper error handling for v3 endpoint
 
 ### Phase 2: Performance Optimization
 1. Cache folder/space data longer (they change less frequently)
@@ -138,9 +151,18 @@ response = requests.get(url, headers=headers)
 folders = response.json()['folders']
 ```
 
+### Get All Docs (v3 API)
+```python
+# Note: Uses workspace_id (same as team_id) but v3 endpoint
+url = f'https://api.clickup.com/api/v3/workspaces/{workspace_id}/docs'
+headers = {'Authorization': api_key}
+response = requests.get(url, headers=headers)
+docs = response.json().get('docs', [])  # Response structure may differ
+```
+
 ### Filter Results Client-Side
 ```python
-# Fuzzy match against space/folder names
+# Fuzzy match against space/folder/doc names
 for space in spaces:
     if fuzzy_match(query, space['name']):
         results.append({
@@ -148,6 +170,15 @@ for space in spaces:
             'name': space['name'],
             'id': space['id'],
             'url': f'https://app.clickup.com/{team_id}/v/s/{space["id"]}'
+        })
+
+for doc in docs:
+    if fuzzy_match(query, doc.get('name', '')):
+        results.append({
+            'type': 'doc',
+            'name': doc.get('name', 'Untitled'),
+            'id': doc['id'],
+            'url': doc.get('url', '')  # Docs may include direct URLs
         })
 ```
 
