@@ -49,9 +49,10 @@ Workspace (Team)
 #### Docs (v3 API)
 - **Endpoint**: `GET /api/v3/workspaces/{workspaceId}/docs`
 - **Description**: Lists docs in workspace that user can access
-- **Search params**: None documented - appears to be list-only
-- **Returns**: Array of doc objects
-- **Limitation**: No query/search parameter for filtering by name
+- **Search params**: None - returns all docs
+- **Returns**: Array of doc objects with title, id, url
+- **Search approach**: Fetch all docs, fuzzy match on title client-side
+- **Note**: We'll search doc titles only, not doc contents
 
 ### 3. Search Limitations
 
