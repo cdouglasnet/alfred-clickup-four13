@@ -8,7 +8,7 @@
 import sys
 from workflow import Workflow, ICON_WARNING, web, PasswordNotFound
 
-confNames = {'confApi': 'apiKey', 'confDue': 'dueDate', 'confList': 'list', 'confSpace': 'space', 'confTeam': 'workspace', 'confProject': 'folder', 'confNotification': 'notification', 'confDefaultTag': 'defaultTag', 'confHierarchyLimit': 'hierarchyLimit', 'confUser': 'userId'}
+confNames = {'confApi': 'apiKey', 'confDue': 'dueDate', 'confList': 'list', 'confSpace': 'space', 'confTeam': 'workspace', 'confProject': 'folder', 'confNotification': 'notification', 'confDefaultTag': 'defaultTag', 'confUser': 'userId', 'confSearchScope': 'searchScope'}
 
 
 def main(wf):
@@ -38,7 +38,7 @@ def configuration():
 		elif notificationValue == 'false':
 			notificationValue = '✗'
 		defaultTagValue = getConfigValue(confNames['confDefaultTag'])
-		hierarchyLimitValue = getConfigValue(confNames['confHierarchyLimit'])
+		searchScopeValue = getConfigValue(confNames['confSearchScope']) or 'auto'
 
 		# Mask API key for security - match ClickUp's format: pk_30050********************************MD3G
 		maskedApiKey = ''
@@ -57,7 +57,9 @@ def configuration():
 		wf3.add_item(title = ('*' if not listValue else '') + 'Set default ClickUp list' + (' (' + listValue + ')' if listValue else ''), subtitle = 'List you want to add tasks to by default. (Required)', valid = False, autocomplete = confNames['confList'] + ' ', icon='icon.png' if listValue else 'error.png')
 		wf3.add_item(title = 'Set Show Notification' + (' (' + notificationValue + ')' if notificationValue else ''), subtitle = 'Show notification after creating task?', valid = False, autocomplete = confNames['confNotification'] + ' ')
 		wf3.add_item(title = 'Set default Tag' + (' (' + defaultTagValue + ')' if defaultTagValue else ''), subtitle = 'Tag that is added to all new tasks.', valid = False, autocomplete = confNames['confDefaultTag'] + ' ')
-		wf3.add_item(title = 'Set hierarchy levels to limit search results' + (' (' + hierarchyLimitValue + ')' if hierarchyLimitValue else ''), subtitle = 'Levels to limit search results by (list, folder, space).', valid = False, autocomplete = confNames['confHierarchyLimit'] + ' ')
+		# Display formatted search scope value
+		scopeDisplay = {'list': 'Performance', 'folder': 'Balanced', 'space': 'Comprehensive', 'auto': 'Auto'}.get(searchScopeValue, searchScopeValue)
+		wf3.add_item(title = 'Set Search Scope' + (' (' + scopeDisplay + ')' if searchScopeValue else ''), subtitle = 'Performance (List), Balanced (Folder), Comprehensive (Space), or Auto', valid = False, autocomplete = confNames['confSearchScope'] + ' ')
 		wf3.add_item(title = 'Validate Configuration', subtitle = 'Check if provided configuration parameters are valid.', valid = False, autocomplete = 'validate', icon = './settings.png')
 		clearCache = wf3.add_item(title = 'Clear Cache', subtitle = 'Clear list of available labels and lists to be retrieved again.', valid = True, arg = 'cu:config cache', icon = './settings.png')
 		clearCache.setvar('isSubmitted', 'true') # No secondary screen necessary
@@ -413,13 +415,6 @@ def configuration():
 			userInput = '(Invalid input).'
 		tagItem = wf3.add_item(title = 'Enter default tag: ' + userInput.lower(), subtitle = 'Save?', valid = True, arg = 'cu:config ' + query)
 		tagItem.setvar('isSubmitted', 'true')
-	elif query.startswith(confNames['confHierarchyLimit'] + ' '):
-		userInput = query.replace(confNames['confHierarchyLimit'] + ' ', '')
-		for level in userInput.split(','):
-			if level.strip() not in ('list', 'folder', 'space'):
-				userInput = '(Invalid input).'
-		tagItem = wf3.add_item(title = 'Enter hierarchy level(s): ' + userInput, subtitle = 'e.g. "list" or "list, folder". Save?', valid = True, arg = 'cu:config ' + query)
-		tagItem.setvar('isSubmitted', 'true')
 	elif query.startswith(confNames['confNotification'] + ' '):
 		userInput = query.replace(confNames['confNotification'] + ' ', '')
 		if userInput == '':
@@ -443,6 +438,34 @@ def configuration():
 			trueItem.setvar('isSubmitted', 'true')
 			falseItem = wf3.add_item(title = 'Disable notifications ✗', subtitle = 'No notification after creating tasks', valid = True, arg = 'cu:config ' + confNames['confNotification'] + ' false')
 			falseItem.setvar('isSubmitted', 'true')
+	elif query.startswith(confNames['confSearchScope'] + ' '):
+		userInput = query.replace(confNames['confSearchScope'] + ' ', '').strip()
+		if userInput == '':
+			# Show all options when no input provided
+			listItem = wf3.add_item(title = 'Performance Mode (List Only)', subtitle = 'Search only your default list - fastest', valid = True, arg = 'cu:config ' + confNames['confSearchScope'] + ' list')
+			listItem.setvar('isSubmitted', 'true')
+			folderItem = wf3.add_item(title = 'Balanced Mode (Folder)', subtitle = 'Search your entire folder - good balance', valid = True, arg = 'cu:config ' + confNames['confSearchScope'] + ' folder')
+			folderItem.setvar('isSubmitted', 'true')
+			spaceItem = wf3.add_item(title = 'Comprehensive Mode (Space)', subtitle = 'Search your entire space - slowest', valid = True, arg = 'cu:config ' + confNames['confSearchScope'] + ' space')
+			spaceItem.setvar('isSubmitted', 'true')
+			autoItem = wf3.add_item(title = 'You Pick (Auto)', subtitle = 'Automatically adjusts based on result count', valid = True, arg = 'cu:config ' + confNames['confSearchScope'] + ' auto')
+			autoItem.setvar('isSubmitted', 'true')
+		elif userInput in ['list', 'folder', 'space', 'auto']:
+			# Valid selection, confirm it
+			displayName = {'list': 'Performance Mode', 'folder': 'Balanced Mode', 'space': 'Comprehensive Mode', 'auto': 'You Pick (Auto)'}.get(userInput, userInput)
+			confirmItem = wf3.add_item(title = 'Set search scope to: ' + displayName, subtitle = 'Save?', valid = True, arg = 'cu:config ' + query)
+			confirmItem.setvar('isSubmitted', 'true')
+		else:
+			# Invalid input, show options
+			wf3.add_item(title = 'Invalid input: ' + userInput, subtitle = 'Please select an option below', valid = False)
+			listItem = wf3.add_item(title = 'Performance Mode (List Only)', subtitle = 'Search only your default list - fastest', valid = True, arg = 'cu:config ' + confNames['confSearchScope'] + ' list')
+			listItem.setvar('isSubmitted', 'true')
+			folderItem = wf3.add_item(title = 'Balanced Mode (Folder)', subtitle = 'Search your entire folder - good balance', valid = True, arg = 'cu:config ' + confNames['confSearchScope'] + ' folder')
+			folderItem.setvar('isSubmitted', 'true')
+			spaceItem = wf3.add_item(title = 'Comprehensive Mode (Space)', subtitle = 'Search your entire space - slowest', valid = True, arg = 'cu:config ' + confNames['confSearchScope'] + ' space')
+			spaceItem.setvar('isSubmitted', 'true')
+			autoItem = wf3.add_item(title = 'You Pick (Auto)', subtitle = 'Automatically adjusts based on result count', valid = True, arg = 'cu:config ' + confNames['confSearchScope'] + ' auto')
+			autoItem.setvar('isSubmitted', 'true')
 	elif query.startswith('validate'): # No suffix ' ' needed, as user is not expected to provide any input.
 		wf3.add_item(title = 'Checking API Key: ' + ('✓' if checkClickUpId('list', 'confList') else '✗'), valid = True, arg = 'cu:config ')
 		wf3.add_item(title = 'Checking List Id: ' + ('✓' if checkClickUpId('list', 'confList') else '✗'), valid = True, arg = 'cu:config ')

@@ -142,21 +142,32 @@ class Fuzzy(object):
         """
         fold = isascii(query)
         items = []
+        
 
         for it in fb['items']:
             # use `match` field by preference; fallback to `title`
             terms = it['match'] if 'match' in it else it['title']
+            
+            # Apply same folding to both query and terms
+            query_to_match = query
             if fold:
                 terms = fold_diacritics(terms)
+                query_to_match = fold_diacritics(query)
 
-            ok, score = self.match(query, terms)
+            ok, score = self.match(query_to_match, terms)
             if not ok:
                 continue
 
             items.append((score, it))
 
-        items.sort(reverse=True)
-        fb['items'] = [it for _, it in items]
+        # Sort items by score (highest first)
+        try:
+            items.sort(reverse=True, key=lambda x: x[0])
+            fb['items'] = [it for _, it in items]
+        except Exception as e:
+            log('Sorting error: %s', e)
+            # Fallback: just return original items without sorting
+            fb['items'] = fb['items']
         return fb
 
     # https://gist.github.com/menzenski/f0f846a254d269bd567e2160485f4b89

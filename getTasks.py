@@ -14,14 +14,28 @@ from config import confNames, getConfigValue
 
 
 def main(wf):
-	getTasks()
+	getTasks(wf)
 
 
-def getTasks():
+def getTasks(wf):
 	'''Retrieves a list of Tasks from the ClickUp API.
 
 ----------
 	'''
+	log = wf.logger
+	
+	# Skip empty queries for search mode to avoid wasteful API calls
+	if len(wf.args) > 1 and wf.args[1] == 'search' and (not wf.args[0] or wf.args[0].strip() == ''):
+		wf3 = Workflow()
+		wf3.add_item(
+			title = 'Start typing to search tasks...',
+			subtitle = 'Enter at least one character to begin searching',
+			valid = False,
+			icon = 'icon.png'
+		)
+		wf3.send_feedback()
+		return
+	
 	# For mode = search: ClickUp does not offer a parameter 'filter_by' - therefore we receive all tasks, and use Alfred/fuzzy to filter.
 	if DEBUG > 0:
 		log.debug('[ Calling API to list tasks ]')
@@ -29,17 +43,28 @@ def getTasks():
 	params = {}
 	wf3 = Workflow()
 
-	if getConfigValue(confNames['confHierarchyLimit']):
-		if 'space' in getConfigValue(confNames['confHierarchyLimit']):
-			params['space_ids[]'] = getConfigValue(confNames['confSpace']) # Use [] instead of %5B%5D
-		if 'folder' in getConfigValue(confNames['confHierarchyLimit']):
-			params['project_ids[]'] = getConfigValue(confNames['confProject'])
-		if 'list' in getConfigValue(confNames['confHierarchyLimit']):
-			params['list_ids[]'] = getConfigValue(confNames['confList'])
+	# Use searchScope, default to 'auto' if not configured
+	search_scope = getConfigValue(confNames['confSearchScope']) or 'auto'
+	
+	if search_scope == 'list':
+		params['list_ids[]'] = getConfigValue(confNames['confList'])
+	elif search_scope == 'folder':
+		params['project_ids[]'] = getConfigValue(confNames['confProject'])
+	elif search_scope == 'space':
+		params['space_ids[]'] = getConfigValue(confNames['confSpace'])
+	elif search_scope == 'auto':
+		# Auto mode: start with list scope
+		params['list_ids[]'] = getConfigValue(confNames['confList'])
 	params['order_by'] = 'due_date'
+	# ClickUp API will return up to 100 tasks per page (their maximum)
+	params['page'] = 0
+	
 	# Differentiates between listing all Alfred-created tasks and searching for all tasks (any)
 	if DEBUG > 0 and len(wf.args) > 1 and wf.args[1] == 'search':
 		log.debug('[ Mode: Search (cus) ]')
+		# Add search query if provided
+		if len(wf.args) > 0 and wf.args[0]:
+			params['query'] = wf.args[0]
 	elif DEBUG > 0 and len(wf.args) > 1 and wf.args[1] == 'open':
 		log.debug('[ Mode: Open tasks (cuo) ]')
 		# from datetime import date, datetime, timezone, timedelta
@@ -73,28 +98,125 @@ def getTasks():
 	try:
 		request = web.get(url, params = params, headers = headers)
 		request.raise_for_status()
-	except:
-		log.debug('Error on HTTP request')
+	except Exception as e:
+		log.debug('Error on HTTP request: ' + str(e))
 		wf3.add_item(title = 'Error connecting to ClickUp.', subtitle = 'Open configuration to check your parameters?', valid = True, arg = 'cu:config ', icon = 'error.png')
 		wf3.send_feedback()
 		exit()
-	result = request.json()
-	if DEBUG > 1:
-		log.debug('Response: ' + str(result))
+	
+	try:
+		result = request.json()
+		if DEBUG > 1:
+			log.debug('Response received with %d tasks (ClickUp max: 100 per page)' % len(result.get('tasks', [])))
+	except Exception as e:
+		log.debug('Error parsing JSON response: ' + str(e))
+		wf3.add_item(title = 'Error parsing ClickUp response.', subtitle = 'The response may be too large. Try a more specific search.', valid = False, icon = 'error.png')
+		wf3.send_feedback()
+		exit()
+
+	# Check if response has tasks
+	if 'tasks' not in result:
+		log.debug('No tasks key in response: ' + str(result.keys()))
+		wf3.add_item(title = 'No tasks found.', subtitle = 'Try a different search query.', valid = False, icon = 'note.png')
+		wf3.send_feedback()
+		exit()
+	
+	# Auto mode expansion logic - accumulate results from all levels
+	if search_scope == 'auto' and len(wf.args) > 1 and wf.args[1] == 'search':
+		all_tasks = list(result.get('tasks', []))  # Start with list-level tasks
+		task_ids = {task['id'] for task in all_tasks}  # Track IDs to avoid duplicates
+		
+		if DEBUG > 0:
+			log.debug('Auto mode: Got %d tasks at list level' % len(all_tasks))
+		
+		# Always try folder level to get more results
+		if getConfigValue(confNames['confProject']):
+			if DEBUG > 0:
+				log.debug('Auto mode: Expanding to folder level')
+			# Remove list constraint, add folder constraint
+			temp_params = params.copy()
+			if 'list_ids[]' in temp_params:
+				del temp_params['list_ids[]']
+			temp_params['project_ids[]'] = getConfigValue(confNames['confProject'])
+			
+			# Make another API call
+			try:
+				request = web.get(url, params = temp_params, headers = headers)
+				request.raise_for_status()
+				folder_result = request.json()
+				
+				# Add new tasks (avoid duplicates)
+				for task in folder_result.get('tasks', []):
+					if task['id'] not in task_ids:
+						all_tasks.append(task)
+						task_ids.add(task['id'])
+				
+				if DEBUG > 0:
+					log.debug('Auto mode: Total %d tasks after folder level' % len(all_tasks))
+			except Exception as e:
+				if DEBUG > 0:
+					log.debug('Auto mode folder expansion failed: %s' % str(e))
+		
+		# If we still don't have many results, try space level
+		if len(all_tasks) < 50 and getConfigValue(confNames['confSpace']):
+			if DEBUG > 0:
+				log.debug('Auto mode: Expanding to space level')
+			# Remove folder constraint, add space constraint
+			temp_params = params.copy()
+			if 'list_ids[]' in temp_params:
+				del temp_params['list_ids[]']
+			if 'project_ids[]' in temp_params:
+				del temp_params['project_ids[]']
+			temp_params['space_ids[]'] = getConfigValue(confNames['confSpace'])
+			
+			# Make another API call
+			try:
+				request = web.get(url, params = temp_params, headers = headers)
+				request.raise_for_status()
+				space_result = request.json()
+				
+				# Add new tasks (avoid duplicates)
+				for task in space_result.get('tasks', []):
+					if task['id'] not in task_ids:
+						all_tasks.append(task)
+						task_ids.add(task['id'])
+				
+				if DEBUG > 0:
+					log.debug('Auto mode: Total %d tasks after space level' % len(all_tasks))
+			except Exception as e:
+				if DEBUG > 0:
+					log.debug('Auto mode space expansion failed: %s' % str(e))
+		
+		# Replace result with accumulated tasks
+		result['tasks'] = all_tasks
 
 	for task in result['tasks']:
 		tags = ''
-		if task['tags']:
-			for allTaskTags in task['tags']:
-				tags += allTaskTags['name'] + ' '
+		if task.get('tags'):
+			for allTaskTags in task.get('tags', []):
+				tags += allTaskTags.get('name', '') + ' '
 
+		subtitle_parts = []
+		if task.get('due_date'):
+			subtitle_parts.append(emoji.emojize(':calendar:') + str(datetime.datetime.fromtimestamp(int(task.get('due_date'))/1000)))
+		if task.get('priority'):
+			priority_info = task.get('priority', {})
+			if priority_info.get('priority'):
+				subtitle_parts.append(emoji.emojize(':exclamation_mark:') + priority_info['priority'].title())
+		if task.get('tags') and tags.strip():
+			subtitle_parts.append(emoji.emojize(':label:') + tags.strip())
+		
+		# Safe access to required fields with defaults
+		status_text = task.get('status', {}).get('status', 'Unknown')
+		task_name = task.get('name', 'Untitled Task')
+		task_url = task.get('url', '')
+		
 		wf3.add_item(
-			title = '[' + task['status']['status'] + '] ' + task['name'],
-			subtitle = (emoji.emojize(':calendar:') + \
-                str(datetime.datetime.fromtimestamp(int(task['due_date'])/1000)) if task['due_date'] else '') + (emoji.emojize(
-			':exclamation_mark:') + task['priority']['priority'].title() if task['priority'] else '') + (' ' + emoji.emojize(':label:') + tags if task['tags'] else ''),
+			title = '[' + status_text + '] ' + task_name,
+			subtitle = ' '.join(subtitle_parts) if subtitle_parts else 'No additional details',
+			match = task_name,  # Use just the task name for fuzzy matching
 			valid = True,
-			arg = task['url']
+			arg = task_url
 		)
 	wf3.send_feedback()
 
