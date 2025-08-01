@@ -4,14 +4,14 @@ This document describes how to create a new release of the ClickUp Alfred Workfl
 
 ## Automated Release Process
 
-The workflow uses GitHub Actions to automatically build and release new versions when you create a tag.
+The workflow automatically creates releases when changes are merged to the main/master branch.
 
 ### Steps to Create a Release
 
-1. **Update Version Number**
+1. **Update Version Number in Your Branch**
    ```bash
    # Update version in info.plist
-   plutil -replace version -string "1.0.2" info.plist
+   plutil -replace version -string "1.13" info.plist
    
    # Verify the change
    plutil -extract version raw info.plist
@@ -23,20 +23,22 @@ The workflow uses GitHub Actions to automatically build and release new versions
 3. **Commit Version Changes**
    ```bash
    git add info.plist README.md
-   git commit -m "Bump version to 1.0.2"
-   git push origin master
+   git commit -m "Bump version to 1.13"
+   git push origin your-feature-branch
    ```
 
-4. **Create and Push Tag**
-   ```bash
-   # Create tag matching the version in info.plist
-   git tag -a v1.0.2 -m "Release version 1.0.2"
-   
-   # Push tag to trigger release
-   git push origin v1.0.2
-   ```
+4. **Create Pull Request and Merge**
+   - Create a PR to main/master
+   - Once approved and merged, the release will be created automatically
 
-5. **Monitor Release**
+5. **Automatic Release Process**
+   When your PR is merged to main/master:
+   - GitHub Actions will automatically build the workflow
+   - If the version in info.plist is new, it will create a release
+   - If the version already exists, it will skip the release
+   - The workflow file will be attached to the release
+
+6. **Monitor Release**
    - Go to [Actions tab](https://github.com/four13co/alfred-clickup-four13/actions)
    - Watch the "Build and Release Alfred Workflow" workflow
    - Once complete, check [Releases page](https://github.com/four13co/alfred-clickup-four13/releases)
@@ -61,11 +63,10 @@ If the automated process fails, you can create a release manually:
 
 ## Version Numbering
 
-We follow semantic versioning (MAJOR.MINOR.PATCH):
+We use a simple two-digit versioning system (MAJOR.MINOR):
 
-- **MAJOR**: Breaking changes (e.g., 2.0.0)
-- **MINOR**: New features, backwards compatible (e.g., 1.1.0)
-- **PATCH**: Bug fixes (e.g., 1.0.1)
+- **MAJOR**: Major rewrites or breaking changes (e.g., 2.0)
+- **MINOR**: All other updates including features and fixes (e.g., 1.12, 1.13)
 
 ## Pre-release Checklist
 
@@ -94,10 +95,10 @@ After releasing:
 
 ## Troubleshooting
 
-### Version Mismatch Error
-If you get a version mismatch error, ensure:
-- Tag version matches info.plist version exactly
-- Format: tag `v1.0.2` should match info.plist `1.0.2`
+### Version Already Released
+If the version was already released:
+- The workflow will skip creating a duplicate release
+- You need to increment the version number (e.g., 1.12 → 1.13)
 
 ### Build Failures
 - Check GitHub Actions logs
