@@ -38,10 +38,25 @@ Based on current ClickUp documentation:
 - Some v3 endpoints have different response structures
 
 ### 3. Known v3 Endpoints
-Currently documented v3 endpoints:
-- Docs operations
-- Some workspace operations
-- Limited task operations
+Currently available v3 endpoints (as of 2024):
+
+#### Stable v3 Endpoints
+1. **Audit Logs** (Enterprise feature)
+   - `POST /api/v3/workspaces/{workspace_id}/auditlogs`
+   - Not applicable for our workflow use case
+
+#### Experimental v3 Endpoints
+2. **Chat API** (Experimental)
+   - Create/retrieve channels
+   - Send/retrieve messages
+   - Manage reactions and replies
+   - Could enable chat search feature
+
+#### Still on v2
+- All task operations
+- All space/folder/list operations
+- User operations
+- Tag operations
 
 ## Migration Strategy
 
@@ -115,6 +130,24 @@ class ClickUpAPI:
 2. **Clearer Structure**: More intuitive resource paths
 3. **Enhanced Features**: New capabilities not in v2
 4. **Future-Proof**: v2 will eventually be deprecated
+
+## Immediate v3 Implementation Recommendations
+
+### Should Implement Now: None
+Currently, there are no v3 endpoints that would provide immediate value:
+- **Audit Logs**: Enterprise-only, not relevant for task management
+- **Chat API**: Experimental status makes it risky for production use
+
+### Should Wait For:
+1. **Task Operations v3**: Core functionality - wait for stable release
+2. **Space/Folder/List v3**: Essential for navigation - wait for stable release
+3. **Search API v3**: If universal search becomes available
+
+### Recommended Approach:
+1. **Don't rush v3 adoption** - Current v3 endpoints don't benefit our use case
+2. **Focus on v2 optimization** - Current v2 APIs are stable and well-documented
+3. **Monitor Chat API** - Could enable chat search when it exits experimental
+4. **Wait for core endpoints** - Task/Space/Folder operations are most critical
 
 ## Timeline Estimate
 
