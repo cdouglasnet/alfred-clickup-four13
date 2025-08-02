@@ -173,12 +173,21 @@ cul review          # Filter Alfred tasks
 
 ## 🔧 Advanced Configuration
 
-### Hierarchy Limits
-Limit search results by organizational level:
-- `space` - Limit to configured Space
-- `folder` - Limit to configured Folder  
-- `list` - Limit to configured List
-- `space,folder` - Combine multiple levels
+### Search Entity Types
+Toggle which types of items to search:
+- **Tasks** - Always enabled (core functionality)
+- **Documents** - Toggle on/off with `cu:config searchEntities`
+- **Chat Channels** - Toggle on/off with `cu:config searchEntities`
+- **Lists, Folders, Spaces** - Coming soon
+
+Configure via `cu:config` → "Configure Search Types" to enable/disable entity types.
+
+### Search Scope
+Control the breadth of task searches:
+- **Performance (List)** - Search only your default list
+- **Balanced (Folder)** - Search your entire folder
+- **Comprehensive (Space)** - Search your entire space
+- **Auto** - Automatically adjusts based on result count
 
 ### Default Settings
 - **Default Due Date**: Set automatic due date (e.g., `h2` for 2 hours)
