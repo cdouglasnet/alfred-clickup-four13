@@ -29,14 +29,30 @@ def getTasks(wf):
 		wf3 = Workflow()
 		# Get search entities configuration
 		search_entities = getConfigValue(confNames['confSearchEntities']) or 'tasks'
-		if search_entities == 'tasks+docs':
-			search_text = 'tasks and docs'
-		elif search_entities == 'tasks+docs+chats':
-			search_text = 'tasks, docs, and chats'
-		elif search_entities == 'all':
+		# Handle both old format (tasks+docs) and new format (tasks,docs)
+		if '+' in search_entities:
+			# Convert old format to new format
+			search_entities = search_entities.replace('+', ',')
+		
+		entities = search_entities.split(',')
+		search_types = []
+		if 'tasks' in entities:
+			search_types.append('tasks')
+		if 'docs' in entities:
+			search_types.append('docs')
+		if 'chats' in entities:
+			search_types.append('chats')
+		if 'lists' in entities:
+			search_types.append('lists')
+		if 'folders' in entities:
+			search_types.append('folders')
+		if 'spaces' in entities:
+			search_types.append('spaces')
+		
+		if search_entities == 'all':
 			search_text = 'tasks, docs, chats, folders, and spaces'
 		else:
-			search_text = 'tasks'
+			search_text = ' and '.join(search_types) if search_types else 'tasks'
 		
 		wf3.add_item(
 			title = f'Start typing to search {search_text}...',
@@ -202,10 +218,15 @@ def getTasks(wf):
 		result['tasks'] = all_tasks
 	
 	# Check if we should also search for docs
-	search_entities = getConfigValue(confNames['confSearchEntities']) or 'tasks'
+	search_entities_raw = getConfigValue(confNames['confSearchEntities']) or 'tasks'
+	# Handle both old format (tasks+docs) and new format (tasks,docs)
+	if '+' in search_entities_raw:
+		search_entities_raw = search_entities_raw.replace('+', ',')
+	
+	search_entities = search_entities_raw.split(',')
 	docs_results = []
 	
-	if search_entities in ['tasks+docs', 'tasks+docs+chats', 'all'] and len(wf.args) > 1 and wf.args[1] == 'search':
+	if ('docs' in search_entities or search_entities_raw == 'all') and len(wf.args) > 1 and wf.args[1] == 'search':
 		# Fetch docs using v3 API (workspace_id is same as team_id)
 		workspace_id = getConfigValue(confNames['confTeam'])
 		docs_url = f'https://api.clickup.com/api/v3/workspaces/{workspace_id}/docs'
@@ -246,7 +267,7 @@ def getTasks(wf):
 	# Check if we should also search for chat channels
 	chat_results = []
 	
-	if search_entities in ['tasks+docs+chats', 'all'] and len(wf.args) > 1 and wf.args[1] == 'search':
+	if ('chats' in search_entities or search_entities_raw == 'all') and len(wf.args) > 1 and wf.args[1] == 'search':
 		# Fetch chat channels using v3 API
 		workspace_id = getConfigValue(confNames['confTeam'])
 		chat_url = f'https://api.clickup.com/api/v3/workspaces/{workspace_id}/chat/channels'
