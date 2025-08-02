@@ -70,6 +70,12 @@ def configuration():
 			enabled_types.append('Docs')
 		if 'chats' in entities:
 			enabled_types.append('Chats')
+		if 'lists' in entities:
+			enabled_types.append('Lists')
+		if 'folders' in entities:
+			enabled_types.append('Folders')
+		if 'spaces' in entities:
+			enabled_types.append('Spaces')
 		entitiesDisplay = ', '.join(enabled_types) if enabled_types else 'Tasks'
 		wf3.add_item(title = 'Configure Search Types' + (' (' + entitiesDisplay + ')' if entitiesDisplay else ''), subtitle = 'Toggle which entity types to search', valid = False, autocomplete = confNames['confSearchEntities'] + ' ')
 		wf3.add_item(title = 'Validate Configuration', subtitle = 'Check if provided configuration parameters are valid.', valid = False, autocomplete = 'validate', icon = './settings.png')
@@ -519,35 +525,44 @@ def configuration():
 			)
 			chatsItem.setvar('isSubmitted', 'true')
 			
-			# Lists (coming soon)
-			wf3.add_item(
-				title = '○ Lists (coming soon)', 
-				subtitle = 'Not yet implemented', 
-				valid = False,
+			# Lists
+			lists_enabled = 'lists' in current_entities
+			listsItem = wf3.add_item(
+				title = ('✓' if lists_enabled else '○') + ' Lists', 
+				subtitle = 'Click to ' + ('disable' if lists_enabled else 'enable') + ' list search', 
+				valid = True, 
+				arg = 'cu:config ' + confNames['confSearchEntities'] + ' toggle:lists',
 				icon = 'label.png'
 			)
+			listsItem.setvar('isSubmitted', 'true')
 			
-			# Folders (coming soon)
-			wf3.add_item(
-				title = '○ Folders (coming soon)', 
-				subtitle = 'Not yet implemented', 
-				valid = False,
+			# Folders
+			folders_enabled = 'folders' in current_entities
+			foldersItem = wf3.add_item(
+				title = ('✓' if folders_enabled else '○') + ' Folders', 
+				subtitle = 'Click to ' + ('disable' if folders_enabled else 'enable') + ' folder search', 
+				valid = True, 
+				arg = 'cu:config ' + confNames['confSearchEntities'] + ' toggle:folders',
 				icon = 'settings.png'
 			)
+			foldersItem.setvar('isSubmitted', 'true')
 			
-			# Spaces (coming soon)
-			wf3.add_item(
-				title = '○ Spaces (coming soon)', 
-				subtitle = 'Not yet implemented', 
-				valid = False,
+			# Spaces
+			spaces_enabled = 'spaces' in current_entities
+			spacesItem = wf3.add_item(
+				title = ('✓' if spaces_enabled else '○') + ' Spaces', 
+				subtitle = 'Click to ' + ('disable' if spaces_enabled else 'enable') + ' space search', 
+				valid = True, 
+				arg = 'cu:config ' + confNames['confSearchEntities'] + ' toggle:spaces',
 				icon = 'settings.png'
 			)
+			spacesItem.setvar('isSubmitted', 'true')
 			
 		elif userInput.startswith('toggle:'):
 			# Toggle a specific entity
 			entity = userInput.replace('toggle:', '')
 			
-			if entity in ['docs', 'chats']:
+			if entity in ['docs', 'chats', 'lists', 'folders', 'spaces']:
 				if entity in current_entities:
 					# Remove it
 					current_entities.remove(entity)
@@ -562,7 +577,7 @@ def configuration():
 					current_entities.insert(0, 'tasks')
 				
 				new_value = ','.join(current_entities)
-				entity_name = {'docs': 'Documents', 'chats': 'Chat Channels'}.get(entity, entity)
+				entity_name = {'docs': 'Documents', 'chats': 'Chat Channels', 'lists': 'Lists', 'folders': 'Folders', 'spaces': 'Spaces'}.get(entity, entity)
 				
 				confirmItem = wf3.add_item(
 					title = action + ' ' + entity_name + ' search', 
@@ -581,7 +596,7 @@ def configuration():
 			invalid = [e for e in entities if e not in valid_entities]
 			
 			if invalid:
-				wf3.add_item(title = 'Invalid entities: ' + ', '.join(invalid), subtitle = 'Valid: tasks, docs, chats', valid = False)
+				wf3.add_item(title = 'Invalid entities: ' + ', '.join(invalid), subtitle = 'Valid: tasks, docs, chats, lists, folders, spaces', valid = False)
 			else:
 				# Always ensure tasks is included
 				if 'tasks' not in entities:
