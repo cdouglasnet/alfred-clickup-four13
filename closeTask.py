@@ -5,11 +5,10 @@
 #
 # GNU GPL v2.0 Licence. See https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 #
-from __future__ import unicode_literals
 import sys
 from main import DEBUG, formatDate
 from config import confNames, getConfigValue
-from workflow import Workflow, Workflow3, ICON_WEB, ICON_CLOCK, ICON_WARNING, ICON_GROUP, web
+from workflow import Workflow, ICON_WEB, ICON_CLOCK, ICON_WARNING, ICON_GROUP, web
 
 
 def main(wf):
@@ -30,7 +29,7 @@ def updateTask(strTaskId):
 	from workflow.notify import notify
 	if DEBUG > 0:
 		log.debug('[ Calling API to close task ]')
-	wf3 = Workflow3()
+	wf3 = Workflow()
 	url = 'https://api.clickup.com/api/v2/task/' + strTaskId
 
 	headers = {}

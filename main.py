@@ -5,15 +5,12 @@
 #
 # GNU GPL v2.0 Licence. See https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 #
-from __future__ import unicode_literals
 import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
 import datetime
 import os
 import emoji
 import re
-from workflow import Workflow, Workflow3, ICON_CLOCK, ICON_WARNING, ICON_GROUP, ICON_SYNC, web, util # Alfred-Workflow
+from workflow import Workflow, ICON_CLOCK, ICON_WARNING, ICON_GROUP, ICON_SYNC, web, util # Alfred-Workflow
 from workflow.util import set_config, unset_config
 from workflow.update import Version
 from config import confNames, getConfigValue
@@ -309,6 +306,11 @@ def formatNotificationText(inputContent, inputDue, inputTags, inputPriority, ava
 
 	if DEBUG > 0:
 		log.debug('[ formatNotificationText() ] ')
+		log.debug('inputContent type: %s, value: "%s"' % (type(inputContent), inputContent))
+		log.debug('inputDue type: %s, value: "%s"' % (type(inputDue), inputDue))
+		log.debug('inputTags type: %s, value: %s' % (type(inputTags), inputTags))
+		log.debug('inputPriority type: %s, value: %s' % (type(inputPriority), inputPriority))
+		log.debug('availableListsIdName type: %s, value: %s' % (type(availableListsIdName), availableListsIdName))
 	notificationPriority, notificationTag, notificationBracketOpen, notificationBracketClose, notificationSeparator = '', '', '', '', ''
 	if inputPriority:
 		notificationPriority = emoji.emojize(':exclamation_mark:') + str(inputPriority)
@@ -326,7 +328,12 @@ def formatNotificationText(inputContent, inputDue, inputTags, inputPriority, ava
 	if inputPriority != None and hasTags:
 		notificationSeparator = ', '
 	if inputDue and inputDue != 'None':
-		inputDue = emoji.emojize(':calendar:') + formatDate(inputDue)
+		try:
+			inputDue = emoji.emojize(':calendar:') + formatDate(inputDue)
+		except Exception as e:
+			if DEBUG > 0:
+				log.debug('Error formatting date: %s' % str(e))
+			inputDue = ''
 	else:
 		inputDue = ''
 
@@ -334,7 +341,34 @@ def formatNotificationText(inputContent, inputDue, inputTags, inputPriority, ava
 	if lineBreaks:
 		br = '\n'
 
-	return inputContent + ('  ' if inputContent != '' else '') + br + inputDue + notificationBracketOpen + notificationPriority + notificationSeparator + notificationTag + ' ' + (emoji.emojize(':spiral_notepad:') + str(next(iter(availableListsIdName))) if availableListsIdName != None else '') + notificationBracketClose
+	# Ensure all parts are strings
+	parts = [
+		str(inputContent) if inputContent else '',
+		'  ' if inputContent else '',
+		str(br) if inputContent else '',  # Only add line break if there's content
+		str(inputDue) if inputDue else '',
+		str(notificationBracketOpen),
+		str(notificationPriority),
+		str(notificationSeparator),
+		str(notificationTag),
+		' ' if notificationPriority or notificationTag or (availableListsIdName and len(availableListsIdName) > 0) else '',  # Only add space if there's something to separate
+		emoji.emojize(':spiral_notepad:') + str(next(iter(availableListsIdName))) if availableListsIdName and len(availableListsIdName) > 0 else '',
+		str(notificationBracketClose)
+	]
+	
+	result = ''.join(parts)
+	
+	# Debug logging
+	if DEBUG > 0:
+		log.debug('formatNotificationText result: "%s"' % result)
+		log.debug('result.strip(): "%s"' % result.strip())
+		log.debug('len(result): %d' % len(result))
+	
+	# Ensure we never return an empty string for notifications
+	if not result or not result.strip():
+		result = 'Task created successfully'
+	
+	return result
 
 
 def formatDate(dateTime):
@@ -377,7 +411,7 @@ def getContentFromInput(query):
 	inputContent = ''
 	hasContent = len(query.split(':')) > 1
 	if hasContent:
-		inputContent = query.split(':', 1)[1].split(' #', 1)[0].split(' @', 1)[0].split(' !', 1)[0].split(" +", 1)[0].strip().decode('utf-8') # Avoid adding #myTag, @due, !priority to the content text
+		inputContent = query.split(':', 1)[1].split(' #', 1)[0].split(' @', 1)[0].split(' !', 1)[0].split(" +", 1)[0].strip() # Avoid adding #myTag, @due, !priority to the content text
 	if DEBUG > 1:
 		log.debug('inputContent: ' + str(inputContent))
 
@@ -447,7 +481,7 @@ def getDueFromInput(query):
 	hasDefault = (getConfigValue(confNames['confDue']) is not None and getConfigValue(confNames['confDue']) != '')
 	naturalValue = ''
 	timeValue = ''
- 	hasValue = False
+	hasValue = False
 	isInputInteger = False
 	if hasTime or hasDefault:
 		inputDue = 0
@@ -603,7 +637,7 @@ def getPriorityFromInput(query):
 		log.debug('[ getPriorityFromInput() ] ')
 	inputPriority = None
 	hasPriority = len(query.split(' !', 2)) > 1
- 	isInputInteger = False
+	isInputInteger = False
 	if hasPriority:
 		isInputInteger = query.split(' !', 2)[1][:1].isnumeric()
 	if hasPriority and isInputInteger: # Priority is of only 1 character, so we can receive the 1st character of the second element. As such, any text after is ignored.
@@ -774,6 +808,6 @@ def main(wf):
 
 if __name__ == "__main__":
 	wf = Workflow(update_settings = UPDATE_SETTINGS)
-	wf3 = Workflow3(update_settings = UPDATE_SETTINGS)
+	wf3 = Workflow(update_settings = UPDATE_SETTINGS)
 	log = wf.logger
 	sys.exit(wf.run(main))

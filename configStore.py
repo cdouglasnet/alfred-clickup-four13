@@ -5,12 +5,11 @@
 #
 # GNU GPL v2.0 Licence. See https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 #
-from __future__ import unicode_literals
 import sys
 import argparse
 import os
 from main import DEBUG, formatDate
-from workflow import Workflow, Workflow3, ICON_WEB, ICON_CLOCK, ICON_WARNING, ICON_GROUP, web, PasswordNotFound
+from workflow import Workflow, ICON_WEB, ICON_CLOCK, ICON_WARNING, ICON_GROUP, web, PasswordNotFound
 from config import getConfigName, getUserInput, confNames
 from workflow.notify import notify
 
@@ -67,6 +66,39 @@ def updateConfiguration():
 		#Notify cache cleared
 	else:
 		updateSetting(configName, userInput)
+		# Show notification for saved settings
+		setting_name = configName
+		# Convert internal names to user-friendly names
+		friendly_names = {
+			'apiKey': 'API Key',
+			'dueDate': 'Default Due Date',
+			'list': 'Default List',
+			'space': 'Space',
+			'workspace': 'Workspace',
+			'folder': 'Folder',
+			'notification': 'Notification',
+			'defaultTag': 'Default Tag',
+			'hierarchyLimit': 'Hierarchy Limit',
+			'userId': 'User ID'
+		}
+		display_name = friendly_names.get(configName, configName or 'Setting')
+		
+		# Special handling for clearing values
+		if userInput.strip() == '':
+			if configName == 'folder' and userInput == 'none':
+				notify('Setting Saved', f'{display_name} cleared (using space directly)')
+			else:
+				notify('Setting Cleared', f'{display_name} has been removed')
+		else:
+			# Special handling for notification true/false
+			if configName == 'notification':
+				value_display = 'Enabled' if userInput == 'true' else 'Disabled'
+				notify('Setting Saved', f'{display_name} {value_display}')
+			else:
+				notify('Setting Saved', f'{display_name} has been updated')
+		
+		# Return to main config menu by outputting empty string
+		print("")
 
 
 def updateSetting(configName, userInput):

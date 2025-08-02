@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # encoding: utf-8
 #
 # Copyright (c) 2017 Dean Jackson <deanishe@deanishe.net>
@@ -35,7 +35,6 @@ their `title` field.
 
 """
 
-from __future__ import print_function, absolute_import
 
 import json
 import os
@@ -77,7 +76,7 @@ def fold_diacritics(u):
     """Remove diacritics from Unicode string."""
     u = normalize('NFD', u)
     s = u.encode('us-ascii', 'ignore')
-    return unicode(s)
+    return s.decode('us-ascii')
 
 
 def isascii(u):
@@ -87,11 +86,11 @@ def isascii(u):
 
 def decode(s):
     """Decode and NFC-normalise string."""
-    if not isinstance(s, unicode):
-        if isinstance(s, str):
+    if not isinstance(s, str):
+        if isinstance(s, bytes):
             s = s.decode('utf-8')
         else:
-            s = unicode(s)
+            s = str(s)
 
     return normalize('NFC', s)
 
@@ -143,21 +142,32 @@ class Fuzzy(object):
         """
         fold = isascii(query)
         items = []
+        
 
         for it in fb['items']:
             # use `match` field by preference; fallback to `title`
             terms = it['match'] if 'match' in it else it['title']
+            
+            # Apply same folding to both query and terms
+            query_to_match = query
             if fold:
                 terms = fold_diacritics(terms)
+                query_to_match = fold_diacritics(query)
 
-            ok, score = self.match(query, terms)
+            ok, score = self.match(query_to_match, terms)
             if not ok:
                 continue
 
             items.append((score, it))
 
-        items.sort(reverse=True)
-        fb['items'] = [it for _, it in items]
+        # Sort items by score (highest first)
+        try:
+            items.sort(reverse=True, key=lambda x: x[0])
+            fb['items'] = [it for _, it in items]
+        except Exception as e:
+            log('Sorting error: %s', e)
+            # Fallback: just return original items without sorting
+            fb['items'] = fb['items']
         return fb
 
     # https://gist.github.com/menzenski/f0f846a254d269bd567e2160485f4b89
@@ -311,7 +321,7 @@ class Cache(object):
 
             log('added session id %r to results', sid)
 
-            with open(self.cache_path, 'wb') as fp:
+            with open(self.cache_path, 'w') as fp:
                 json.dump(fb, fp)
                 log('cached script results to %r', self.cache_path)
 
@@ -335,7 +345,7 @@ class Cache(object):
         """Return cache path for this session."""
         if not self._cache_path:
             if not os.path.exists(self.cache_dir):
-                os.makedirs(self.cache_dir, 0700)
+                os.makedirs(self.cache_dir, 0o700)
                 log('created cache dir %r', self.cache_dir)
 
             self._cache_path = os.path.join(self.cache_dir,

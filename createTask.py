@@ -5,7 +5,6 @@
 #
 # GNU GPL v2.0 Licence. See https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 #
-from __future__ import unicode_literals
 import sys
 # import argparse
 import os
@@ -13,7 +12,7 @@ import json
 import datetime
 from main import DEBUG, formatNotificationText
 from config import confNames, getConfigValue
-from workflow import Workflow, Workflow3, web
+from workflow import Workflow, web
 from workflow.notify import notify
 
 
@@ -123,13 +122,13 @@ def createTask(inputName, inputContent, inputDue, inputPriority, inputTags, inpu
 	# If user pressed 'opt' (optInput == true), we do not want to show a notification, as the task is opened in the browser
 	hasUserNotPressedOpt = 'optInput' not in os.environ or os.environ['optInput'] == 'false'
 	if getConfigValue(confNames['confNotification']) == 'true' and (hasUserNotPressedOpt):
-		notify('Created: ' + inputName, formatNotificationText(inputContent, inputDue, inputTags, inputPriority, inputList, True))
-	elif os.environ['optInput'] and os.environ['optInput'] == 'true':
+		notify('Task Created', inputName, formatNotificationText(inputContent, inputDue, inputTags, inputPriority, None, False))
+	elif 'optInput' in os.environ and os.environ['optInput'] == 'true':
 		print(result['url'])
 
 
 if __name__ == "__main__":
 	wf = Workflow()
-	wf3 = Workflow3()
+	wf3 = Workflow()
 	log = wf.logger
 	sys.exit(wf.run(main))

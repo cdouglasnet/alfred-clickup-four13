@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>bundleid</key>
-	<string>com.msk.clickup2.0</string>
+	<string>com.four13digital.clickup</string>
 	<key>category</key>
 	<string>Productivity</string>
 	<key>connections</key>
@@ -353,9 +353,9 @@
 		</array>
 	</dict>
 	<key>createdby</key>
-	<string>Michael Schmidt-Korth</string>
+	<string>Greg Flint - Four13 Digital</string>
 	<key>description</key>
-	<string>Create tasks in ClickUp</string>
+	<string>Powerful ClickUp integration for Alfred - Create tasks, search projects, and manage your workflow with natural language</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
@@ -389,7 +389,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>/usr/bin/python -O createTask.py "$1" "$optInput"</string>
+				<string>/usr/bin/python3 -O createTask.py "$1" "$optInput"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -445,7 +445,7 @@
 				<key>runningsubtext</key>
 				<string></string>
 				<key>script</key>
-				<string>/usr/bin/python -O main.py "$1" "$optInput"</string>
+				<string>/usr/bin/python3 -O main.py "$1" "$optInput"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -672,7 +672,7 @@
 				<string>export query="$1"
 export adj_bonus=15
 
-./fuzzy.py /usr/bin/python -O getTasks.py "$1"</string>
+./fuzzy.py /usr/bin/python3 -O getTasks.py "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -755,7 +755,7 @@ export adj_bonus=15
 export query="$1"
 export adj_bonus=15
 
-./fuzzy.py /usr/bin/python -O getTasks.py "$1" "$mode"</string>
+./fuzzy.py /usr/bin/python3 -O getTasks.py "$1" "$mode"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -845,7 +845,7 @@ export adj_bonus=15
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>/usr/bin/python -O closeTask.py "$1"</string>
+				<string>/usr/bin/python3 -O closeTask.py "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -891,11 +891,11 @@ export adj_bonus=15
 				<key>keyword</key>
 				<string>cus</string>
 				<key>queuedelaycustom</key>
-				<integer>3</integer>
+				<integer>1000</integer>
 				<key>queuedelayimmediatelyinitially</key>
-				<true/>
+				<false/>
 				<key>queuedelaymode</key>
-				<integer>0</integer>
+				<integer>2</integer>
 				<key>queuemode</key>
 				<integer>1</integer>
 				<key>runningsubtext</key>
@@ -906,7 +906,7 @@ export adj_bonus=15
 export query="$1"
 export adj_bonus=15
 
-./fuzzy.py /usr/bin/python -O getTasks.py "$1" "$mode"</string>
+./fuzzy.py /usr/bin/python3 -O getTasks.py "$1" "$mode"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -914,7 +914,7 @@ export adj_bonus=15
 				<key>subtext</key>
 				<string>Keep on typing to filter...</string>
 				<key>title</key>
-				<string>Search all tasks of project</string>
+				<string>Search ClickUp items</string>
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
@@ -935,7 +935,7 @@ export adj_bonus=15
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>/usr/bin/python -O closeTask.py "$1"</string>
+				<string>/usr/bin/python3 -O closeTask.py "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -1020,7 +1020,7 @@ export adj_bonus=15
 				<key>runningsubtext</key>
 				<string>load</string>
 				<key>script</key>
-				<string>/usr/bin/python -O config.py "$1"</string>
+				<string>/usr/bin/python3 -O config.py "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -1064,7 +1064,7 @@ export adj_bonus=15
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>/usr/bin/python -O configStore.py "$1"</string>
+				<string>/usr/bin/python3 -O configStore.py "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -1126,9 +1126,36 @@ export adj_bonus=15
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>This workflow allows you to quickly add a task and search tasks within ClickUp 2.0.
+	<string>🚀 Streamline your ClickUp workflow directly from Alfred!
 
-For details, see https://github.com/mschmidtkorth/alfred-clickup-msk/blob/master/README.md</string>
+This powerful workflow brings ClickUp 2.0 to your fingertips with:
+
+✨ QUICK TASK CREATION (cu)
+Create tasks with natural language: "cu Review proposal :Check requirements #work @fri !1 +Projects"
+• Title, description, tags, due dates, priorities, and lists - all in one command
+• Smart autocomplete for tags and lists
+• Emoji support for rich task formatting
+
+🔍 INTELLIGENT SEARCH
+• cus - Search all tasks with fuzzy matching
+• cuo - View tasks due today or overdue  
+• cul - Find tasks created via Alfred
+
+⚙️ SMART CONFIGURATION (cu:config)
+• Secure API key storage in macOS Keychain
+• Easy workspace and project setup
+• Validation to ensure everything works
+
+🛡️ BUILT FOR PROFESSIONALS
+• Python 3.9+ for modern macOS compatibility
+• Enterprise-grade security for API credentials
+• Blazing fast performance with intelligent caching
+• Works with ClickUp's latest API v2
+
+📚 For complete documentation, examples, and advanced features:
+https://github.com/four13co/alfred-clickup-four13/blob/master/README.md
+
+Made with ❤️ by Four13 Digital</string>
 	<key>uidata</key>
 	<dict>
 		<key>12671D12-381F-4421-BBA4-9AD759EF917B</key>
@@ -1396,8 +1423,8 @@ Uses fuzzy search instead of Alfred filtering.</string>
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>1.1.1</string>
+	<string>1.13</string>
 	<key>webaddress</key>
-	<string>https://github.com/mschmidtkorth/alfred-clickup-msk/</string>
+	<string>https://github.com/four13co/alfred-clickup-four13</string>
 </dict>
 </plist>

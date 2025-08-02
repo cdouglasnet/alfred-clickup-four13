@@ -1,0 +1,141 @@
+name: Beta Release
+
+on:
+  push:
+    branches: [ beta ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Get version from info.plist
+      id: version
+      run: |
+        VERSION=$(plutil -extract version raw info.plist)
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "Workflow version: $VERSION"
+        
+    - name: Build workflow
+      run: |
+        chmod +x build.sh
+        ./build.sh
+        
+    - name: Verify build
+      run: |
+        test -f ClickUp.alfredworkflow || exit 1
+        unzip -t ClickUp.alfredworkflow
+        echo "✅ Workflow built successfully"
+        
+    - name: Upload workflow artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ClickUp-v${{ steps.version.outputs.VERSION }}-beta.alfredworkflow
+        path: ClickUp.alfredworkflow
+        retention-days: 7
+        
+  release:
+    needs: build
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Get version info
+      id: version
+      run: |
+        # Get version from info.plist
+        PLIST_VERSION=$(plutil -extract version raw info.plist)
+        echo "PLIST_VERSION=$PLIST_VERSION" >> $GITHUB_OUTPUT
+        
+        # Generate beta release tag with timestamp
+        TIMESTAMP=$(date +%Y%m%d%H%M%S)
+        RELEASE_TAG="v${PLIST_VERSION}-beta-${TIMESTAMP}"
+        echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_OUTPUT
+        
+        echo "✅ Beta version ${PLIST_VERSION} ready for release"
+        
+    - name: Build workflow
+      run: |
+        chmod +x build.sh
+        ./build.sh
+        
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Get commits since last production release
+        LATEST_PROD_TAG=$(git tag -l "v*" | grep -v beta | sort -V | tail -1)
+        if [ -z "$LATEST_PROD_TAG" ]; then
+          echo "No production release found, including recent commits"
+          COMMITS=$(git log --pretty=format:"- %s" | head -20)
+        else
+          echo "Generating changelog since $LATEST_PROD_TAG"
+          COMMITS=$(git log --pretty=format:"- %s" $LATEST_PROD_TAG..HEAD)
+        fi
+        
+        # Create changelog
+        cat > CHANGELOG.md << EOF
+        ## 🚧 Beta Release v${{ steps.version.outputs.PLIST_VERSION }}
+        
+        **⚠️ This is a beta release for testing purposes. It may contain bugs or incomplete features.**
+        
+        ### What's New
+        
+        $COMMITS
+        
+        ### Testing Instructions
+        
+        1. Download the \`ClickUp.alfredworkflow\` file below
+        2. Double-click to install in Alfred (this will replace any existing version)
+        3. Configure your API key with \`cu:config\`
+        4. Test the new features and report any issues
+        
+        ### New Features to Test
+        
+        - Individual toggle configuration for search entities
+        - Lists, Folders, and Spaces search functionality
+        - Enhanced visual indicators for different entity types
+        
+        ### Feedback
+        
+        Please report any issues or feedback on the [GitHub Issues](https://github.com/four13co/alfred-clickup-four13/issues) page.
+        
+        ## Requirements
+        
+        - Alfred 5+ with Powerpack
+        - macOS 10.15+ (Python 3.9+ included)
+        - ClickUp API key from https://app.clickup.com/settings/apps
+        EOF
+        
+        echo "changelog<<EOF" >> $GITHUB_OUTPUT
+        cat CHANGELOG.md >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        
+    - name: Create Beta Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.version.outputs.RELEASE_TAG }}
+        name: Beta - ClickUp Alfred Workflow v${{ steps.version.outputs.PLIST_VERSION }}
+        body: ${{ steps.changelog.outputs.changelog }}
+        files: ClickUp.alfredworkflow
+        draft: false
+        prerelease: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
