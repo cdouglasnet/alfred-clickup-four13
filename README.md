@@ -3,7 +3,7 @@
 **Streamline your ClickUp task management directly from Alfred**
 
 [![Build Status](https://github.com/four13co/alfred-clickup-four13/actions/workflows/build-release.yml/badge.svg)](https://github.com/four13co/alfred-clickup-four13/actions)
-[![Version](https://img.shields.io/badge/version-1.12-blue.svg)](https://github.com/four13co/alfred-clickup-four13/releases)
+[![Version](https://img.shields.io/badge/version-1.13-blue.svg)](https://github.com/four13co/alfred-clickup-four13/releases)
 [![Python](https://img.shields.io/badge/python-3.9+-green.svg)](https://python.org)
 [![Alfred](https://img.shields.io/badge/alfred-5%2B-purple.svg)](https://alfredapp.com)
 [![License](https://img.shields.io/badge/license-GPL%20v2.0-red.svg)](LICENSE)
@@ -133,11 +133,26 @@ cu Plan vacation #personal #travel @w2 !3
 
 ### Task Search
 
-**Search All Tasks (`cus`)**
+**Search ClickUp Items (`cus`)**
 ```bash
-cus budget          # Find tasks containing "budget"
+cus budget          # Find items containing "budget"
 cus [Open]          # Filter by status
 ```
+
+**Visual Indicators:**
+- 📋 **Tasks** - Shows task status and uses priority icons
+- 📄 **Documents** - ClickUp Docs (when enabled)
+- 💬 **Chat Channels** - [Chat] prefix for channels, [DM] for direct messages (when enabled)
+- 📝 **Lists** - Coming soon
+- 📁 **Folders** - Coming soon
+- 🏢 **Spaces** - Coming soon
+- 🏠 **Workspaces** - Coming soon
+
+**Priority Icons for Tasks:**
+- 🔴 Urgent (prio1.png)
+- 🟡 High (prio2.png)  
+- 🟢 Normal (prio3.png)
+- 🔵 Low (prio4.png)
 
 **Open Tasks (`cuo`)**
 ```bash

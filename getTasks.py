@@ -27,8 +27,19 @@ def getTasks(wf):
 	# Skip empty queries for search mode to avoid wasteful API calls
 	if len(wf.args) > 1 and wf.args[1] == 'search' and (not wf.args[0] or wf.args[0].strip() == ''):
 		wf3 = Workflow()
+		# Get search entities configuration
+		search_entities = getConfigValue(confNames['confSearchEntities']) or 'tasks'
+		if search_entities == 'tasks+docs':
+			search_text = 'tasks and docs'
+		elif search_entities == 'tasks+docs+chats':
+			search_text = 'tasks, docs, and chats'
+		elif search_entities == 'all':
+			search_text = 'tasks, docs, chats, folders, and spaces'
+		else:
+			search_text = 'tasks'
+		
 		wf3.add_item(
-			title = 'Start typing to search tasks...',
+			title = f'Start typing to search {search_text}...',
 			subtitle = 'Enter at least one character to begin searching',
 			valid = False,
 			icon = 'icon.png'
@@ -189,6 +200,92 @@ def getTasks(wf):
 		
 		# Replace result with accumulated tasks
 		result['tasks'] = all_tasks
+	
+	# Check if we should also search for docs
+	search_entities = getConfigValue(confNames['confSearchEntities']) or 'tasks'
+	docs_results = []
+	
+	if search_entities in ['tasks+docs', 'tasks+docs+chats', 'all'] and len(wf.args) > 1 and wf.args[1] == 'search':
+		# Fetch docs using v3 API (workspace_id is same as team_id)
+		workspace_id = getConfigValue(confNames['confTeam'])
+		docs_url = f'https://api.clickup.com/api/v3/workspaces/{workspace_id}/docs'
+		
+		if DEBUG > 0:
+			log.debug('Fetching docs from v3 API')
+		
+		try:
+			docs_response = web.get(docs_url, headers=headers)
+			docs_response.raise_for_status()
+			docs_data = docs_response.json()
+			
+			if DEBUG > 1:
+				log.debug('Docs API response: %d docs found' % len(docs_data.get('docs', [])))
+			
+			# Process docs
+			for doc in docs_data.get('docs', []):
+				doc_title = doc.get('name', 'Untitled Document')
+				doc_id = doc.get('id', '')
+				# Try to use the URL from the API response, otherwise construct it
+				doc_url = doc.get('url', f'https://app.clickup.com/{workspace_id}/d/{doc_id}')
+				
+				docs_results.append({
+					'type': 'doc',
+					'title': doc_title,
+					'id': doc_id,
+					'url': doc_url
+				})
+			
+			if DEBUG > 0:
+				log.debug('Added %d docs to results' % len(docs_results))
+				
+		except Exception as e:
+			if DEBUG > 0:
+				log.debug('Failed to fetch docs: ' + str(e))
+			# Continue with task results even if docs fail
+	
+	# Check if we should also search for chat channels
+	chat_results = []
+	
+	if search_entities in ['tasks+docs+chats', 'all'] and len(wf.args) > 1 and wf.args[1] == 'search':
+		# Fetch chat channels using v3 API
+		workspace_id = getConfigValue(confNames['confTeam'])
+		chat_url = f'https://api.clickup.com/api/v3/workspaces/{workspace_id}/chat/channels'
+		
+		if DEBUG > 0:
+			log.debug('Fetching chat channels from v3 API')
+		
+		try:
+			chat_response = web.get(chat_url, headers=headers)
+			chat_response.raise_for_status()
+			chat_data = chat_response.json()
+			
+			if DEBUG > 1:
+				log.debug('Chat API response: %d channels found' % len(chat_data.get('channels', [])))
+			
+			# Process chat channels
+			for channel in chat_data.get('channels', []):
+				channel_name = channel.get('name', 'Unnamed Channel')
+				channel_id = channel.get('id', '')
+				channel_type = channel.get('type', 'channel')  # Could be 'channel' or 'dm' (direct message)
+				
+				# Construct URL - this is an educated guess based on ClickUp's URL patterns
+				channel_url = f'https://app.clickup.com/{workspace_id}/chat/channel/{channel_id}'
+				
+				chat_results.append({
+					'type': 'chat',
+					'title': channel_name,
+					'id': channel_id,
+					'url': channel_url,
+					'channel_type': channel_type
+				})
+			
+			if DEBUG > 0:
+				log.debug('Added %d chat channels to results' % len(chat_results))
+				
+		except Exception as e:
+			if DEBUG > 0:
+				log.debug('Failed to fetch chat channels: ' + str(e))
+			# Continue with other results even if chat fails
 
 	for task in result['tasks']:
 		tags = ''
@@ -211,13 +308,55 @@ def getTasks(wf):
 		task_name = task.get('name', 'Untitled Task')
 		task_url = task.get('url', '')
 		
+		# Choose icon based on priority
+		icon = 'icon.png'  # Default icon for tasks
+		if task.get('priority'):
+			priority_info = task.get('priority', {})
+			priority_val = priority_info.get('priority')
+			if priority_val == 'urgent':
+				icon = 'prio1.png'
+			elif priority_val == 'high':
+				icon = 'prio2.png'
+			elif priority_val == 'normal':
+				icon = 'prio3.png'
+			elif priority_val == 'low':
+				icon = 'prio4.png'
+		
 		wf3.add_item(
 			title = '[' + status_text + '] ' + task_name,
-			subtitle = ' '.join(subtitle_parts) if subtitle_parts else 'No additional details',
+			subtitle = ' '.join(subtitle_parts) if subtitle_parts else 'ClickUp Task',
 			match = task_name,  # Use just the task name for fuzzy matching
 			valid = True,
-			arg = task_url
+			arg = task_url,
+			icon = icon
 		)
+	
+	# Add doc results after tasks
+	for doc in docs_results:
+		wf3.add_item(
+			title = '[Doc] ' + doc['title'],
+			subtitle = 'ClickUp Document',
+			match = doc['title'],  # For fuzzy matching
+			valid = True,
+			arg = doc['url'],
+			icon = 'note.png'  # Using existing note icon for docs
+		)
+	
+	# Add chat channel results after docs
+	for chat in chat_results:
+		# Add indicator for DMs vs channels
+		prefix = '[DM]' if chat['channel_type'] == 'dm' else '[Chat]'
+		subtitle = 'Direct Message' if chat['channel_type'] == 'dm' else 'Chat Channel'
+		
+		wf3.add_item(
+			title = prefix + ' ' + chat['title'],
+			subtitle = subtitle,
+			match = chat['title'],  # For fuzzy matching
+			valid = True,
+			arg = chat['url'],
+			icon = 'label.png'  # Using label icon for chats
+		)
+	
 	wf3.send_feedback()
 
 

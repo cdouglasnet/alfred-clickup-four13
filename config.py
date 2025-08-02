@@ -8,7 +8,7 @@
 import sys
 from workflow import Workflow, ICON_WARNING, web, PasswordNotFound
 
-confNames = {'confApi': 'apiKey', 'confDue': 'dueDate', 'confList': 'list', 'confSpace': 'space', 'confTeam': 'workspace', 'confProject': 'folder', 'confNotification': 'notification', 'confDefaultTag': 'defaultTag', 'confUser': 'userId', 'confSearchScope': 'searchScope'}
+confNames = {'confApi': 'apiKey', 'confDue': 'dueDate', 'confList': 'list', 'confSpace': 'space', 'confTeam': 'workspace', 'confProject': 'folder', 'confNotification': 'notification', 'confDefaultTag': 'defaultTag', 'confUser': 'userId', 'confSearchScope': 'searchScope', 'confSearchEntities': 'searchEntities'}
 
 
 def main(wf):
@@ -39,6 +39,7 @@ def configuration():
 			notificationValue = '✗'
 		defaultTagValue = getConfigValue(confNames['confDefaultTag'])
 		searchScopeValue = getConfigValue(confNames['confSearchScope']) or 'auto'
+		searchEntitiesValue = getConfigValue(confNames['confSearchEntities']) or 'tasks'
 
 		# Mask API key for security - match ClickUp's format: pk_30050********************************MD3G
 		maskedApiKey = ''
@@ -60,6 +61,9 @@ def configuration():
 		# Display formatted search scope value
 		scopeDisplay = {'list': 'Performance', 'folder': 'Balanced', 'space': 'Comprehensive', 'auto': 'Auto'}.get(searchScopeValue, searchScopeValue)
 		wf3.add_item(title = 'Set Search Scope' + (' (' + scopeDisplay + ')' if searchScopeValue else ''), subtitle = 'Performance (List), Balanced (Folder), Comprehensive (Space), or Auto', valid = False, autocomplete = confNames['confSearchScope'] + ' ')
+		# Display formatted search entities value
+		entitiesDisplay = {'tasks': 'Tasks Only', 'tasks+docs': 'Tasks & Docs', 'all': 'All Types'}.get(searchEntitiesValue, searchEntitiesValue)
+		wf3.add_item(title = 'Set Search Types' + (' (' + entitiesDisplay + ')' if searchEntitiesValue else ''), subtitle = 'What to search: Tasks Only, Tasks & Docs, or All Types', valid = False, autocomplete = confNames['confSearchEntities'] + ' ')
 		wf3.add_item(title = 'Validate Configuration', subtitle = 'Check if provided configuration parameters are valid.', valid = False, autocomplete = 'validate', icon = './settings.png')
 		clearCache = wf3.add_item(title = 'Clear Cache', subtitle = 'Clear list of available labels and lists to be retrieved again.', valid = True, arg = 'cu:config cache', icon = './settings.png')
 		clearCache.setvar('isSubmitted', 'true') # No secondary screen necessary
@@ -145,10 +149,11 @@ def configuration():
 					for list_item in filtered:
 						task_count = list_item.get('task_count', 0)
 						wf3.add_item(
-							title=list_item['name'],
-							subtitle=f"ID: {list_item['id']} - {task_count} tasks",
+							title='📝 ' + list_item['name'],
+							subtitle=f"List ID: {list_item['id']} - {task_count} tasks",
 							arg=f"cu:config {confNames['confList']} {list_item['id']}",
-							valid=True
+							valid=True,
+							icon='label.png'  # Using label icon for lists
 						)
 				else:
 					# Allow manual ID entry
@@ -224,7 +229,7 @@ def configuration():
 				if filtered:
 					for space in filtered:
 						wf3.add_item(
-							title=space['name'],
+							title='🏢 ' + space['name'],
 							subtitle=f"ID: {space['id']} - Select this space",
 							arg=f"cu:config {confNames['confSpace']} {space['id']}",
 							valid=True
@@ -293,7 +298,7 @@ def configuration():
 			if filtered:
 				for workspace in filtered:
 					wf3.add_item(
-						title=workspace['name'],
+						title='🏠 ' + workspace['name'],
 						subtitle=f"ID: {workspace['id']} - Select this workspace",
 						arg=f"cu:config {confNames['confTeam']} {workspace['id']}",
 						valid=True
@@ -382,7 +387,7 @@ def configuration():
 					for folder in filtered:
 						list_count = len(folder.get('lists', []))
 						wf3.add_item(
-							title=folder['name'],
+							title='📁 ' + folder['name'],
 							subtitle=f"ID: {folder['id']} - {list_count} lists",
 							arg=f"cu:config {confNames['confProject']} {folder['id']}",
 							valid=True
@@ -466,6 +471,34 @@ def configuration():
 			spaceItem.setvar('isSubmitted', 'true')
 			autoItem = wf3.add_item(title = 'You Pick (Auto)', subtitle = 'Automatically adjusts based on result count', valid = True, arg = 'cu:config ' + confNames['confSearchScope'] + ' auto')
 			autoItem.setvar('isSubmitted', 'true')
+	elif query.startswith(confNames['confSearchEntities'] + ' '):
+		userInput = query.replace(confNames['confSearchEntities'] + ' ', '').strip()
+		if userInput == '':
+			# Show all options when no input provided
+			tasksItem = wf3.add_item(title = 'Tasks Only', subtitle = 'Search only ClickUp tasks (default)', valid = True, arg = 'cu:config ' + confNames['confSearchEntities'] + ' tasks')
+			tasksItem.setvar('isSubmitted', 'true')
+			tasksDocsItem = wf3.add_item(title = 'Tasks & Docs', subtitle = 'Search: 📋 Tasks and 📄 Document titles', valid = True, arg = 'cu:config ' + confNames['confSearchEntities'] + ' tasks+docs')
+			tasksDocsItem.setvar('isSubmitted', 'true')
+			tasksDocsChatsItem = wf3.add_item(title = 'Tasks, Docs & Chats', subtitle = 'Search: 📋 Tasks, 📄 Docs, and 💬 Chat channels', valid = True, arg = 'cu:config ' + confNames['confSearchEntities'] + ' tasks+docs+chats')
+			tasksDocsChatsItem.setvar('isSubmitted', 'true')
+			allItem = wf3.add_item(title = 'All Types', subtitle = 'Search: 📋 Tasks, 📄 Docs, 💬 Chats, 📝 Lists, 📁 Folders, 🏢 Spaces', valid = True, arg = 'cu:config ' + confNames['confSearchEntities'] + ' all')
+			allItem.setvar('isSubmitted', 'true')
+		elif userInput in ['tasks', 'tasks+docs', 'tasks+docs+chats', 'all']:
+			# Valid selection, confirm it
+			displayName = {'tasks': 'Tasks Only', 'tasks+docs': 'Tasks & Docs', 'tasks+docs+chats': 'Tasks, Docs & Chats', 'all': 'All Types'}.get(userInput, userInput)
+			confirmItem = wf3.add_item(title = 'Set search types to: ' + displayName, subtitle = 'Save?', valid = True, arg = 'cu:config ' + query)
+			confirmItem.setvar('isSubmitted', 'true')
+		else:
+			# Invalid input, show options
+			wf3.add_item(title = 'Invalid input: ' + userInput, subtitle = 'Please select an option below', valid = False)
+			tasksItem = wf3.add_item(title = 'Tasks Only', subtitle = 'Search only ClickUp tasks (default)', valid = True, arg = 'cu:config ' + confNames['confSearchEntities'] + ' tasks')
+			tasksItem.setvar('isSubmitted', 'true')
+			tasksDocsItem = wf3.add_item(title = 'Tasks & Docs', subtitle = 'Search: 📋 Tasks and 📄 Document titles', valid = True, arg = 'cu:config ' + confNames['confSearchEntities'] + ' tasks+docs')
+			tasksDocsItem.setvar('isSubmitted', 'true')
+			tasksDocsChatsItem = wf3.add_item(title = 'Tasks, Docs & Chats', subtitle = 'Search: 📋 Tasks, 📄 Docs, and 💬 Chat channels', valid = True, arg = 'cu:config ' + confNames['confSearchEntities'] + ' tasks+docs+chats')
+			tasksDocsChatsItem.setvar('isSubmitted', 'true')
+			allItem = wf3.add_item(title = 'All Types', subtitle = 'Search: 📋 Tasks, 📄 Docs, 💬 Chats, 📝 Lists, 📁 Folders, 🏢 Spaces', valid = True, arg = 'cu:config ' + confNames['confSearchEntities'] + ' all')
+			allItem.setvar('isSubmitted', 'true')
 	elif query.startswith('validate'): # No suffix ' ' needed, as user is not expected to provide any input.
 		wf3.add_item(title = 'Checking API Key: ' + ('✓' if checkClickUpId('list', 'confList') else '✗'), valid = True, arg = 'cu:config ')
 		wf3.add_item(title = 'Checking List Id: ' + ('✓' if checkClickUpId('list', 'confList') else '✗'), valid = True, arg = 'cu:config ')
