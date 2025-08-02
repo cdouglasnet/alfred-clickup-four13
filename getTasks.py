@@ -307,6 +307,131 @@ def getTasks(wf):
 			if DEBUG > 0:
 				log.debug('Failed to fetch chat channels: ' + str(e))
 			# Continue with other results even if chat fails
+	
+	# Check if we should search for Lists, Folders, and Spaces
+	lists_results = []
+	folders_results = []
+	spaces_results = []
+	
+	if len(wf.args) > 1 and wf.args[1] == 'search':
+		# Get the search query
+		search_query = wf.args[0].lower() if len(wf.args) > 0 and wf.args[0] else ''
+		
+		# Fetch Spaces
+		if 'spaces' in search_entities or search_entities_raw == 'all':
+			if DEBUG > 0:
+				log.debug('Fetching spaces for search')
+			
+			try:
+				space_url = f'https://api.clickup.com/api/v2/team/{workspace_id}/space'
+				space_response = web.get(space_url, headers=headers)
+				space_response.raise_for_status()
+				space_data = space_response.json()
+				
+				# Filter spaces by name
+				for space in space_data.get('spaces', []):
+					space_name = space.get('name', '')
+					if search_query in space_name.lower():
+						space_id = space.get('id', '')
+						# Construct URL for space
+						space_url = f'https://app.clickup.com/{workspace_id}/s/{space_id}'
+						
+						spaces_results.append({
+							'type': 'space',
+							'title': space_name,
+							'id': space_id,
+							'url': space_url
+						})
+				
+				if DEBUG > 0:
+					log.debug('Found %d spaces matching query' % len(spaces_results))
+					
+			except Exception as e:
+				if DEBUG > 0:
+					log.debug('Failed to fetch spaces: ' + str(e))
+		
+		# Fetch Folders (need to fetch from each space)
+		if 'folders' in search_entities or search_entities_raw == 'all':
+			if DEBUG > 0:
+				log.debug('Fetching folders for search')
+				
+			try:
+				# First get all spaces to fetch folders from each
+				space_url = f'https://api.clickup.com/api/v2/team/{workspace_id}/space'
+				space_response = web.get(space_url, headers=headers)
+				space_response.raise_for_status()
+				space_data = space_response.json()
+				
+				for space in space_data.get('spaces', []):
+					space_id = space.get('id', '')
+					# Get folders for this space
+					folder_url = f'https://api.clickup.com/api/v2/space/{space_id}/folder'
+					try:
+						folder_response = web.get(folder_url, headers=headers)
+						folder_response.raise_for_status()
+						folder_data = folder_response.json()
+						
+						# Filter folders by name
+						for folder in folder_data.get('folders', []):
+							folder_name = folder.get('name', '')
+							if search_query in folder_name.lower():
+								folder_id = folder.get('id', '')
+								# Construct URL for folder
+								folder_url = f'https://app.clickup.com/{workspace_id}/f/{folder_id}'
+								
+								folders_results.append({
+									'type': 'folder',
+									'title': folder_name,
+									'id': folder_id,
+									'url': folder_url,
+									'space_name': space.get('name', '')
+								})
+								
+					except Exception as e:
+						if DEBUG > 0:
+							log.debug('Failed to fetch folders for space %s: %s' % (space_id, str(e)))
+				
+				if DEBUG > 0:
+					log.debug('Found %d folders matching query' % len(folders_results))
+					
+			except Exception as e:
+				if DEBUG > 0:
+					log.debug('Failed to fetch folders: ' + str(e))
+		
+		# Fetch Lists (need to fetch from all accessible locations)
+		if 'lists' in search_entities or search_entities_raw == 'all':
+			if DEBUG > 0:
+				log.debug('Fetching lists for search')
+				
+			try:
+				# Get all lists from workspace
+				lists_url = f'https://api.clickup.com/api/v2/team/{workspace_id}/list'
+				lists_response = web.get(lists_url, headers=headers)
+				lists_response.raise_for_status()
+				lists_data = lists_response.json()
+				
+				# Filter lists by name
+				for list_item in lists_data.get('lists', []):
+					list_name = list_item.get('name', '')
+					if search_query in list_name.lower():
+						list_id = list_item.get('id', '')
+						# Construct URL for list
+						list_url = f'https://app.clickup.com/{workspace_id}/li/{list_id}'
+						
+						lists_results.append({
+							'type': 'list',
+							'title': list_name,
+							'id': list_id,
+							'url': list_url,
+							'task_count': list_item.get('task_count', 0)
+						})
+				
+				if DEBUG > 0:
+					log.debug('Found %d lists matching query' % len(lists_results))
+					
+			except Exception as e:
+				if DEBUG > 0:
+					log.debug('Failed to fetch lists: ' + str(e))
 
 	for task in result['tasks']:
 		tags = ''
@@ -376,6 +501,39 @@ def getTasks(wf):
 			valid = True,
 			arg = chat['url'],
 			icon = 'label.png'  # Using label icon for chats
+		)
+	
+	# Add list results
+	for list_item in lists_results:
+		wf3.add_item(
+			title = '[List] ' + list_item['title'],
+			subtitle = f"ClickUp List - {list_item['task_count']} tasks",
+			match = list_item['title'],  # For fuzzy matching
+			valid = True,
+			arg = list_item['url'],
+			icon = 'label.png'  # Using label icon for lists
+		)
+	
+	# Add folder results
+	for folder in folders_results:
+		wf3.add_item(
+			title = '[Folder] ' + folder['title'],
+			subtitle = f"ClickUp Folder in {folder['space_name']}",
+			match = folder['title'],  # For fuzzy matching
+			valid = True,
+			arg = folder['url'],
+			icon = 'settings.png'  # Using settings icon for folders
+		)
+	
+	# Add space results
+	for space in spaces_results:
+		wf3.add_item(
+			title = '[Space] ' + space['title'],
+			subtitle = 'ClickUp Space',
+			match = space['title'],  # For fuzzy matching
+			valid = True,
+			arg = space['url'],
+			icon = 'settings.png'  # Using settings icon for spaces
 		)
 	
 	wf3.send_feedback()
