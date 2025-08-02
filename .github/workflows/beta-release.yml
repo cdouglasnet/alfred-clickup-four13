@@ -36,7 +36,7 @@ jobs:
         echo "✅ Workflow built successfully"
         
     - name: Upload workflow artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ClickUp-v${{ steps.version.outputs.VERSION }}-beta.alfredworkflow
         path: ClickUp.alfredworkflow
