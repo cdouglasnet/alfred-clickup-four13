@@ -14,6 +14,7 @@ from workflow import Workflow, ICON_CLOCK, ICON_WARNING, ICON_GROUP, ICON_SYNC, 
 from workflow.util import set_config, unset_config
 from workflow.update import Version
 from config import confNames, getConfigValue
+from validation import validate_clickup_id, validate_api_key
 
 DEBUG = 2 # 0 = Off (no output), 1 = Some, 2 = All
 
@@ -37,14 +38,24 @@ def retrieveLabelsFromAPI():
 	'''
 	if DEBUG > 0:
 		log.debug('[ Calling API to receive labels ]')
-	url = 'https://api.clickup.com/api/v2/space/' + getConfigValue(confNames['confSpace']) + '/tag'
+	try:
+		space_id = validate_clickup_id(getConfigValue(confNames['confSpace']), 'space')
+		url = f'https://api.clickup.com/api/v2/space/{space_id}/tag'
+	except ValueError as e:
+		log.error(f'Invalid space ID: {e}')
+		return []
 	params = None
 	headers = {}
-	headers['Authorization'] = getConfigValue(confNames['confApi'])
+	try:
+		api_key = validate_api_key(getConfigValue(confNames['confApi']))
+		headers['Authorization'] = api_key
+	except ValueError as e:
+		log.error(f'Invalid API key: {e}')
+		return []
 	headers['Content-Type'] = 'application/json'
 	headers['format'] = 'json'
 	try:
-		request = web.get(url, params, headers)
+		request = web.get(url, params, headers, timeout = 30)
 		request.raise_for_status()
 	except:
 		log.debug('Error on HTTP request.')
@@ -71,7 +82,6 @@ def getLabels(input):
 		log.debug('[ Displaying labels ] - input: ' + input)
 	availableTags = wf.cached_data('availableLabels', retrieveLabelsFromAPI, max_age = 600) # Get data from cache or retrieve from API
 
-	global query
 	global hasFoundMatch
 	# If user types 'test #123 ', we know that the tag has already been chosen - no need to display
 	isUserEndedInput = query[-1] == ' '
@@ -107,7 +117,6 @@ def getPriorities(input):
 	if DEBUG > 0:
 		log.debug('[ Collecting priorities - input: ' + input + ']')
 
-	global query
 	global hasFoundMatch
 	dicPriorities = {1: 'Urgent', 2: 'High', 3: 'Normal', 4: 'Low'} # Priorities cannot be customized by user. -1 = None, but must not be selectable.
 
@@ -138,14 +147,24 @@ def retrieveListsFromAPI():
 	'''
 	if DEBUG > 0:
 		log.debug('[ Calling API to receive lists ]')
-	url = 'https://api.clickup.com/api/v2/team/' + getConfigValue(confNames['confTeam']) + '/list'
+	try:
+		team_id = validate_clickup_id(getConfigValue(confNames['confTeam']), 'workspace')
+		url = f'https://api.clickup.com/api/v2/team/{team_id}/list'
+	except ValueError as e:
+		log.error(f'Invalid team/workspace ID: {e}')
+		return []
 	params = {}
 	params['archived'] = False
 	headers = {}
-	headers['Authorization'] = getConfigValue(confNames['confApi'])
+	try:
+		api_key = validate_api_key(getConfigValue(confNames['confApi']))
+		headers['Authorization'] = api_key
+	except ValueError as e:
+		log.error(f'Invalid API key: {e}')
+		return []
 	headers['Content-Type'] = 'application/json'
 	try:
-		request = web.get(url, params, headers)
+		request = web.get(url, params, headers, timeout = 30)
 		request.raise_for_status()
 	except:
 		log.debug('Error on HTTP request')
@@ -169,7 +188,6 @@ def getLists(input, doPrintResults):
 	'''
 	if DEBUG > 0:
 		log.debug('[ Displaying lists (' + str(doPrintResults) + ') ] - input: ' + input)
-	global query
 	global availableLists
 	availableLists = wf.cached_data('availableLists', retrieveListsFromAPI, max_age = 7200)
 
@@ -182,7 +200,6 @@ def getLists(input, doPrintResults):
 				# Store association of name to Id, as Id needs to be passed to API
 				# Hidden lists are outside of a Folder, only connected to a Space
 				folderName = '[' + singleList['folder']['name'] + '] ' if (singleList['folder']['name'] != 'hidden') else ''
-				global availableListsIdName
 				availableListsIdName[singleList['id']] = folderName + singleList['name']
 				availableListsNameId[folderName + singleList['name']] = singleList['id']
 				allListTitles.append(folderName + singleList['name'])
@@ -613,7 +630,6 @@ def getListFromInput(query):
 	if DEBUG > 0:
 		log.debug('[ getListFromInput() ] ')
 	inputList = getConfigValue(confNames['confList'])
-	global availableListsIdName
 	hasList = len(query.split('+')) > 1
 	if hasList:
 		# If user is typing, the current list name - e.g. 'tes' for 'cu X +tes' - will not match anything in the dict. Until we found a complete match, do not attempt to update inputList
