@@ -58,7 +58,12 @@ def updateTask(strTaskId):
 	data['status'] = 'Closed'
 	if DEBUG > 1:
 		log.debug(url)
-		log.debug(headers)
+		# Mask API key in headers for secure logging
+		from config import maskApiKey
+		safe_headers = headers.copy()
+		if 'Authorization' in safe_headers:
+			safe_headers['Authorization'] = maskApiKey(safe_headers['Authorization'])
+		log.debug(safe_headers)
 		log.debug(data)
 
 	try:

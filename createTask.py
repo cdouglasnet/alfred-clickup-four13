@@ -49,7 +49,12 @@ def getCurrentUser():
 		
 		if DEBUG > 1:
 			log.debug(url)
-			log.debug(headers)
+			# Mask API key in headers for secure logging
+			from config import maskApiKey
+			safe_headers = headers.copy()
+			if 'Authorization' in safe_headers:
+				safe_headers['Authorization'] = maskApiKey(safe_headers['Authorization'])
+			log.debug(safe_headers)
 		
 		try:
 			request = web.get(url, params = params, headers = headers, timeout = 30)
@@ -127,7 +132,12 @@ def createTask(inputName, inputContent, inputDue, inputPriority, inputTags, inpu
 	
 	if DEBUG > 1:
 		log.debug(url)
-		log.debug(headers)
+		# Mask API key in headers for secure logging
+		from config import maskApiKey
+		safe_headers = headers.copy()
+		if 'Authorization' in safe_headers:
+			safe_headers['Authorization'] = maskApiKey(safe_headers['Authorization'])
+		log.debug(safe_headers)
 		log.debug(data)
 	
 	try:
