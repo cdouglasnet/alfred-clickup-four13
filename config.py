@@ -581,35 +581,9 @@ def configuration():
 			spacesItem.setvar('isSubmitted', 'true')
 			
 		elif userInput.startswith('toggle:'):
-			# Toggle a specific entity
-			entity = userInput.replace('toggle:', '')
-			
-			if entity in ['docs', 'chats', 'lists', 'folders', 'spaces']:
-				if entity in current_entities:
-					# Remove it
-					current_entities.remove(entity)
-					action = 'Disabled'
-				else:
-					# Add it
-					current_entities.append(entity)
-					action = 'Enabled'
-				
-				# Always ensure tasks is included
-				if 'tasks' not in current_entities:
-					current_entities.insert(0, 'tasks')
-				
-				new_value = ','.join(current_entities)
-				entity_name = {'docs': 'Documents', 'chats': 'Chat Channels', 'lists': 'Lists', 'folders': 'Folders', 'spaces': 'Spaces'}.get(entity, entity)
-				
-				confirmItem = wf3.add_item(
-					title = action + ' ' + entity_name + ' search', 
-					subtitle = 'New search configuration: ' + new_value, 
-					valid = True, 
-					arg = 'cu:config ' + confNames['confSearchEntities'] + ' ' + new_value
-				)
-				confirmItem.setvar('isSubmitted', 'true')
-			else:
-				wf3.add_item(title = 'Invalid entity: ' + entity, subtitle = 'Cannot toggle this entity', valid = False)
+			# This case is now handled directly by configStore.py
+			# We should not reach here in normal flow, but if we do, show an error
+			wf3.add_item(title = 'Toggle processing error', subtitle = 'This should be handled by configStore.py', valid = False)
 		else:
 			# Direct setting of entities (backward compatibility)
 			# Validate the input

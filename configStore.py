@@ -64,6 +64,42 @@ def updateConfiguration():
 			log.debug(wf.cached_data('availableLists', None, max_age = 600))
 		notify('Cleared Cache', 'Lists and labels will be retrieved from ClickUp again.')
 		#Notify cache cleared
+	elif configName == confNames['confSearchEntities'] and userInput.startswith('toggle:'):
+		# Handle toggle command for search entities
+		entity = userInput.replace('toggle:', '')
+		
+		from config import getConfigValue
+		current_entities = (getConfigValue(confNames['confSearchEntities']) or 'tasks').split(',')
+		
+		if entity in ['docs', 'chats', 'lists', 'folders', 'spaces']:
+			if entity in current_entities:
+				# Remove it
+				current_entities.remove(entity)
+				action = 'Disabled'
+			else:
+				# Add it
+				current_entities.append(entity)
+				action = 'Enabled'
+			
+			# Always ensure tasks is included
+			if 'tasks' not in current_entities:
+				current_entities.insert(0, 'tasks')
+			
+			new_value = ','.join(current_entities)
+			entity_name = {'docs': 'Documents', 'chats': 'Chat Channels', 'lists': 'Lists', 'folders': 'Folders', 'spaces': 'Spaces'}.get(entity, entity)
+			
+			# Update the setting
+			updateSetting(confNames['confSearchEntities'], new_value)
+			
+			# Show notification
+			notify(f'{action} {entity_name}', f'Search entities: {new_value}')
+			
+			# Return to search entities menu
+			print(confNames['confSearchEntities'] + ' ')
+		else:
+			# Invalid entity, return to search entities menu
+			notify('Invalid Entity', f'Cannot toggle {entity}')
+			print(confNames['confSearchEntities'] + ' ')
 	else:
 		updateSetting(configName, userInput)
 		# Show notification for saved settings
@@ -79,7 +115,8 @@ def updateConfiguration():
 			'notification': 'Notification',
 			'defaultTag': 'Default Tag',
 			'hierarchyLimit': 'Hierarchy Limit',
-			'userId': 'User ID'
+			'userId': 'User ID',
+			'searchEntities': 'Search Entities'
 		}
 		display_name = friendly_names.get(configName, configName or 'Setting')
 		
@@ -94,6 +131,11 @@ def updateConfiguration():
 			if configName == 'notification':
 				value_display = 'Enabled' if userInput == 'true' else 'Disabled'
 				notify('Setting Saved', f'{display_name} {value_display}')
+			elif configName == confNames['confSearchEntities']:
+				# For search entities, return to the menu after saving
+				notify('Search Entities Updated', f'New configuration: {userInput}')
+				print(confNames['confSearchEntities'] + ' ')
+				return
 			else:
 				notify('Setting Saved', f'{display_name} has been updated')
 		
