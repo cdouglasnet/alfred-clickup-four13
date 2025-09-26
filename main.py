@@ -132,6 +132,40 @@ def getPriorities(input):
 	if hasFoundMatch:
 		wf3.send_feedback()
 
+def getDueOptions(input):
+	'''Returns list of available Due Date Options.
+
+----------
+	@param str input: The user's input for a Due Date.
+	'''
+	if DEBUG > 0:
+		log.debug('[ Collecting Due Options - input: ' + input + ']')
+
+	global query
+	global hasFoundMatch
+	dicDueOptions = {'m30': 'Min30','h1': 'Hour1','m90': 'Min90','d1': 'Day1', 'd2': 'Day2','d3': 'Day3','d4': 'Day4','d5': 'Day5','d6': 'Day6','w1': 'Week1', 'w2': 'Week2','w3': 'Week3','w4': 'Week4','w5': 'Week5','w6': 'Week6','w7': 'Week7','w8': 'Week8','w9': 'Week9','w10': 'Week10','w11': 'Week11','w12': 'Week12','n1': 'nMonth1','m2': 'nMonth2','n3': 'nMonth3','n4': 'nMonth4','n5': 'nMonth5','n6': 'nMonth6','n7': 'nMonth7','n8': 'nMonth8','n9': 'nMonth9','n10': 'nMonth10','n11': 'nMonth11','d365': 'Year1'} # Due Options cannot be customized by user. -1 = None, but must not be selectable.
+
+	isUserEndedInput = query[-1] == ' '
+	if not isUserEndedInput:
+		#for dueOption in dicDueOptions:
+		# Escape [ from search, otherwise RegEx error
+		#if len(input) == 0 or re.match(r'^' + input.replace('[', '\['), str(dicDueOptions[dueOption]), re.IGNORECASE) or re.match(r'^' + input.replace('[', '\['), str(dueOption)):
+		allLabelTitles = []
+		for dueOption in dicDueOptions:
+			allLabelTitles.append(str(dueOption) + ' ' + dicDueOptions[dueOption])
+		filteredItems = wf.filter(input, allLabelTitles)
+		for item in filteredItems:
+			hasFoundMatch = True
+			wf3.add_item(
+				title = item.split(' ')[1],
+				subtitle = "Relative to Today",
+				valid = False,
+				#arg = 'cu ' + query.replace(input, '') + str(priority) + ' ',
+				autocomplete = query.replace(input, '') + item.split(' ')[0] + ' ',
+				icon = './due' + item.split(' ')[1][0] + '.png'
+			)
+	if hasFoundMatch:
+		wf3.send_feedback()
 
 def retrieveListsFromAPI():
 	''''Retrieves list of available Lists from ClickUp.
@@ -588,6 +622,30 @@ def getDueFromInput(query):
 				inputDue *= 1000 * 60 * 60 * 24
 			elif inputMinHourDayWeek == 'w':
 				inputDue *= 1000 * 60 * 60 * 24 * 7
+			elif inputMinHourDayWeek == 'n':	# Months - tricky as months have different number of days
+				log.debug('#####>>> Received Months: <<<##### ' + timeValue)
+				# Get the date object and set the new month number
+				todayDate = datetime.datetime.now()
+				newMonth = ((todayDate.month - 1 + int(timeValue)) % 12) + 1
+				log.debug(newMonth)
+				# Get the year, adding in the number of years if we've gone past December
+				newYear = todayDate.year + ((todayDate.month - 1 + int(timeValue)) // 12)
+				log.debug(newYear)
+				# If the day does not exist in the new month (e.g. 31st in February), this will throw an error - so we need to catch that and set the day to the last day of the month
+				try:
+					naturalValue = todayDate.replace(year = newYear, month = newMonth)
+				except ValueError:
+					if newMonth == 2:
+						if (newYear % 4 == 0 and newYear % 100 != 0) or (newYear % 400 == 0):
+							# Leap year
+							naturalValue = todayDate.replace(year = newYear, month = newMonth, day = 29)
+						else:
+							naturalValue = todayDate.replace(year = newYear, month = newMonth, day = 28)
+					elif newMonth in [4, 6, 9, 11]:
+						naturalValue = todayDate.replace(year = newYear, month = newMonth, day = 30)
+					else:
+						naturalValue = todayDate.replace(year = newYear, month = newMonth, day = 31)
+				log.debug(naturalValue)
 	else:
 		inputDue = 0 # No longer default of 2h if no other value specified and no default context variable specified - can now be set via configuration if desired, if not no due date will be added
 		isNoDueDate = True
@@ -736,6 +794,36 @@ def main(wf):
 		wf3.add_item(
 			title = 'Priority already defined.',
 			subtitle = 'Please remove the second \'!\' defining a priority.',
+			valid = False,
+			#arg = 'cu ' + query + ' ',
+			autocomplete = query + ' ',
+			icon = ICON_WARNING
+		)
+		wf3.send_feedback()
+
+	# Evaluate input for Due Dates
+	if len(query.split(' @')) < 3: # Check if user is trying to add a second Duedate - not possible
+		log.debug('#### Start Due Code ####')
+		for idx, dueIdentifier in enumerate(query.split(' @')): # No priority yet entered, suggest.
+			posFollowUpIdentifier = 0
+			hasAtLeastOneDueDate = len(query.split(' @')) > 1
+			if hasAtLeastOneDueDate:
+				posFollowUpTag = dueIdentifier.find(' #') # If a tag follows after a list definition, treat it as end of string.
+				if posFollowUpTag > -1:
+					posFollowUpIdentifier = posFollowUpTag
+				if posFollowUpIdentifier:
+					dueIdentifier = dueIdentifier[0:posFollowUpIdentifier]
+					log.debug(dueIdentifier[0:posFollowUpIdentifier])
+				if not posFollowUpIdentifier:
+					log.debug('#### Get Due Options Pre Call ####')
+					getDueOptions(dueIdentifier)
+	else:
+		if DEBUG > 0:
+			log.debug('Attempted to define additional Due Date.')
+		isDoNotDisplayCreate = True
+		wf3.add_item(
+			title = 'Due Date already defined.',
+			subtitle = 'Please remove the second \'@\' defining a DueDate.',
 			valid = False,
 			#arg = 'cu ' + query + ' ',
 			autocomplete = query + ' ',
