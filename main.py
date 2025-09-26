@@ -400,8 +400,8 @@ def formatNotificationText(inputContent, inputDue, inputTags, inputPriority, ava
 	
 	# Ensure we never return an empty string for notifications
 	if not result or not result.strip():
-		result = 'Task created successfully'
-	
+		result = 'Task created successfully... #Tags @Due !Priority +Lists'
+
 	return result
 
 
