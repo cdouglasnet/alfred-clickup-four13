@@ -296,7 +296,7 @@ def addCreateTaskItem(inputName, inputContent, inputDue, inputPriority, inputTag
 
 ----------
 	@param str inputName: The user's input for the task title.
-	@param str inputContent: The user's input for the task decsription.
+	@param str inputContent: The user's input for the task description.
 	@param str inputDue: The user's input for the task due date.
 	@param str inputPriority: The user's input for the task priority.
 	@param str inputTags: The user's input for the task tags.
@@ -890,7 +890,7 @@ def main(wf):
 	# log.debug('isCustomTagEntered: ' + str(isCustomTagEntered))
 	if not inputEndsWithCommand and not isDoNotDisplayCreate and (not hasFoundMatch or isCustomTagEntered):
 		addCreateTaskItem(inputName, inputContent, inputDue, inputPriority, inputTags, inputList)
-		checkUpdates(wf3) # Output *after* 'Create Task', so user is not pestered by the notiifcation when trying to create a task
+		checkUpdates(wf3) # Output *after* 'Create Task', so user is not pestered by the notification when trying to create a task
 		wf3.send_feedback()
 
 
