@@ -143,7 +143,7 @@ def getDueOptions(input):
 
 	global query
 	global hasFoundMatch
-	dicDueOptions = {'m30': 'Min30','h1': 'Hour1','m90': 'Min90','d1': 'Day1', 'd2': 'Day2','d3': 'Day3','d4': 'Day4','d5': 'Day5','d6': 'Day6','w1': 'Week1', 'w2': 'Week2','w3': 'Week3','w4': 'Week4','w5': 'Week5','w6': 'Week6','w7': 'Week7','w8': 'Week8','w9': 'Week9','w10': 'Week10','w11': 'Week11','w12': 'Week12','n1': 'nMonth1','n2': 'nMonth2','n3': 'nMonth3','n4': 'nMonth4','n5': 'nMonth5','n6': 'nMonth6','n7': 'nMonth7','n8': 'nMonth8','n9': 'nMonth9','n10': 'nMonth10','n11': 'nMonth11','d365': 'Year1'} # Due Options cannot be customized by user. -1 = None, but must not be selectable.
+	dicDueOptions = {'m30': 'Min30','h1': 'Hour1','m90': 'Min90','d1': 'Day1', 'd2': 'Day2','d3': 'Day3','d4': 'Day4','d5': 'Day5','d6': 'Day6','w1': 'Week1', 'w2': 'Week2','w3': 'Week3','w4': 'Week4','w5': 'Week5','w6': 'Week6','w7': 'Week7','w8': 'Week8','w9': 'Week9','w10': 'Week10','w11': 'Week11','w12': 'Week12','n1': 'nMonth1','n2': 'nMonth2','n3': 'nMonth3','n4': 'nMonth4','n5': 'nMonth5','n6': 'nMonth6','n7': 'nMonth7','n8': 'nMonth8','n9': 'nMonth9','n10': 'nMonth10','n11': 'nMonth11','mon': 'Monday','tue': 'Tuesday','wed': 'Wednesday','thu': 'Thursday','fri': 'Friday','sat': 'Saturday','sun': 'Sunday','d365': 'Year1'} # Due Options cannot be customized by user. -1 = None, but must not be selectable.
 
 	isUserEndedInput = query[-1] == ' '
 	if not isUserEndedInput:
@@ -327,7 +327,7 @@ def formatNotificationText(inputContent, inputDue, inputTags, inputPriority, ava
 	'''Generates text to display via notification or list item.
 
 ----------
-	@param str inputContent: The user's input for the task decsription.
+	@param str inputContent: The user's input for the task description.
 	@param str inputDue: The user's input for the task due date.
 	@param str inputTags: The user's input for the task tags.
 	@param str inputPriority: The user's input for the task priority.
@@ -400,7 +400,7 @@ def formatNotificationText(inputContent, inputDue, inputTags, inputPriority, ava
 	
 	# Ensure we never return an empty string for notifications
 	if not result or not result.strip():
-		result = 'Task created successfully... #Tags @Due !Priority +Lists'
+		result = 'Task ready to create... #Tags @Due !Priority +Lists :Description'
 
 	return result
 
