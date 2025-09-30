@@ -143,7 +143,8 @@ def getDueOptions(input):
 
 	global query
 	global hasFoundMatch
-	dicDueOptions = {'m30': 'Min30','h1': 'Hour1','m90': 'Min90','d1': 'Day1', 'd2': 'Day2','d3': 'Day3','d4': 'Day4','d5': 'Day5','d6': 'Day6','w1': 'Week1', 'w2': 'Week2','w3': 'Week3','w4': 'Week4','w5': 'Week5','w6': 'Week6','w7': 'Week7','w8': 'Week8','w9': 'Week9','w10': 'Week10','w11': 'Week11','w12': 'Week12','n1': 'nMonth1','n2': 'nMonth2','n3': 'nMonth3','n4': 'nMonth4','n5': 'nMonth5','n6': 'nMonth6','n7': 'nMonth7','n8': 'nMonth8','n9': 'nMonth9','n10': 'nMonth10','n11': 'nMonth11','mon': 'Monday','tue': 'Tuesday','wed': 'Wednesday','thu': 'Thursday','fri': 'Friday','sat': 'Saturday','sun': 'Sunday','d365': 'Year1'} # Due Options cannot be customized by user. -1 = None, but must not be selectable.
+	dicDueOptions = {'m30': 'Min30','h1': 'Hour1','m90': 'Min90','d1': 'Day1', 'd2': 'Day2','d3': 'Day3','d4': 'Day4','d5': 'Day5','d6': 'Day6','w1': 'Week1', 'w2': 'Week2','w3': 'Week3','w4': 'Week4','w5': 'Week5','w6': 'Week6','w7': 'Week7','w8': 'Week8','w9': 'Week9','w10': 'Week10','w11': 'Week11','w12': 'Week12','n1': 'nMonth1','n2': 'nMonth2','n3': 'nMonth3','n4': 'nMonth4','n5': 'nMonth5','n6': 'nMonth6','n7': 'nMonth7','n8': 'nMonth8','n9': 'nMonth9','n10': 'nMonth10','n11': 'nMonth11','mon': 'Monday','tue': 'Tuesday','wed': 'Wednesday','thu': 'Thursday','fri': 'Friday','sat': 'Saturday','sun': 'Sunday','d365': 'Year1'}
+	# Due Options are to speed up entry, User can still do custom entry ie. d28 etc.  -1 = None, but must not be selectable. (Editing due date will be done elsewhere)
 
 	isUserEndedInput = query[-1] == ' '
 	if not isUserEndedInput:
@@ -156,14 +157,25 @@ def getDueOptions(input):
 		filteredItems = wf.filter(input, allLabelTitles)
 		for item in filteredItems:
 			hasFoundMatch = True
-			wf3.add_item(
-				title = item.split(' ')[1],
-				subtitle = "Relative to Today",
-				valid = False,
-				#arg = 'cu ' + query.replace(input, '') + str(priority) + ' ',
-				autocomplete = query.replace(input, '') + item.split(' ')[0] + ' ',
-				icon = './due' + item.split(' ')[1][0] + '.png'
-			)
+			if item.split(' ')[0] == 'mon' or item.split(' ')[0] == 'tue' or item.split(' ')[0] == 'wed' or item.split(' ')[0] == 'thu' or item.split(' ')[0] == 'fri' or item.split(' ')[0] == 'sat' or item.split(' ')[0] == 'sun':
+				# Due date is a weekday
+				wf3.add_item(
+					title = item.split(' ')[1],
+					subtitle = "Next " + item.split(' ')[1],
+					valid = False,
+					#arg = 'cu ' + query.replace(input, '') + str(priority) + ' ',
+					autocomplete = query.replace(input, '') + item.split(' ')[0] + ' ',
+					icon = './due.png'
+				)
+			else:
+				wf3.add_item(
+					title = item.split(' ')[1],
+					subtitle = "Relative to Today",
+					valid = False,
+					#arg = 'cu ' + query.replace(input, '') + str(priority) + ' ',
+					autocomplete = query.replace(input, '') + item.split(' ')[0] + ' ',
+					icon = './due' + item.split(' ')[1][0] + '.png'
+				)
 	if hasFoundMatch:
 		wf3.send_feedback()
 
