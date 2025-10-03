@@ -210,7 +210,7 @@ def get_local_profile_picture(url, user_id, wf3=None):
     img_path = os.path.join(img_dir, f'{user_id}.jpg')
     # Download if not already present
     if not os.path.exists(img_path):
-        r = requests.get(url)
+        r = requests.get(url, timeout=10)
         if r.status_code == 200:
             with open(img_path, 'wb') as f:
                 f.write(r.content)
@@ -237,7 +237,7 @@ def debugTask(strTaskId):
     try:
         import requests
         log.debug('headers: ' + str(headers))
-        request = requests.get(url, headers = headers)
+        request = requests.get(url, headers=headers, timeout=10)
         request.raise_for_status()
         log.debug("Request Status Code: " + str(request.status_code))
         try:
@@ -463,7 +463,7 @@ def closeTask(strTaskId):
 
     try:
         import requests
-        request = requests.put(url, json = data, headers = headers)
+        request = requests.put(url, json=data, headers=headers, timeout=10)
         request.raise_for_status()
         result = request.json()
         if DEBUG > 1:
