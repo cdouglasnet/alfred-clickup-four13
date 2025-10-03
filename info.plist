@@ -1039,35 +1039,6 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>action</key>
-				<integer>0</integer>
-				<key>argument</key>
-				<integer>0</integer>
-				<key>focusedappvariable</key>
-				<false/>
-				<key>focusedappvariablename</key>
-				<string></string>
-				<key>hotkey</key>
-				<integer>0</integer>
-				<key>hotmod</key>
-				<integer>0</integer>
-				<key>leftcursor</key>
-				<false/>
-				<key>modsmode</key>
-				<integer>0</integer>
-				<key>relatedAppsMode</key>
-				<integer>0</integer>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.trigger.hotkey</string>
-			<key>uid</key>
-			<string>9B9A51E2-F231-483E-B84F-76177FA31C72</string>
-			<key>version</key>
-			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>autopaste</key>
 				<false/>
 				<key>clipboardtext</key>
@@ -1083,6 +1054,31 @@
 			<string>54D1B293-CE19-41C3-A5DD-D6B9E778FE7F</string>
 			<key>version</key>
 			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>action</key>
+				<integer>0</integer>
+				<key>argument</key>
+				<integer>0</integer>
+				<key>focusedappvariable</key>
+				<false/>
+				<key>focusedappvariablename</key>
+				<string></string>
+				<key>leftcursor</key>
+				<false/>
+				<key>modsmode</key>
+				<integer>0</integer>
+				<key>relatedAppsMode</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.hotkey</string>
+			<key>uid</key>
+			<string>9B9A51E2-F231-483E-B84F-76177FA31C72</string>
+			<key>version</key>
+			<integer>2</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -1228,6 +1224,25 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>autopaste</key>
+				<false/>
+				<key>clipboardtext</key>
+				<string>{var:description}</string>
+				<key>ignoredynamicplaceholders</key>
+				<false/>
+				<key>transient</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.clipboard</string>
+			<key>uid</key>
+			<string>82831F81-763F-47C3-B157-F85C4C88022C</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>browser</key>
 				<string></string>
 				<key>skipqueryencode</key>
@@ -1245,25 +1260,6 @@
 			<string>12671D12-381F-4421-BBA4-9AD759EF917B</string>
 			<key>version</key>
 			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>autopaste</key>
-				<false/>
-				<key>clipboardtext</key>
-				<string>{var:description}</string>
-				<key>ignoredynamicplaceholders</key>
-				<false/>
-				<key>transient</key>
-				<false/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.output.clipboard</string>
-			<key>uid</key>
-			<string>82831F81-763F-47C3-B157-F85C4C88022C</string>
-			<key>version</key>
-			<integer>3</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -1309,7 +1305,7 @@
 				<key>fixedorder</key>
 				<true/>
 				<key>items</key>
-				<string>[{"imagefile":"3251a023d42f1f2014d7dd0713beec426760b68a.png","title":"Copy Task Name | {var:name}","arg":"name","subtitle":"id: {var:id} status:{var:status}"},{"imagefile":"3251a023d42f1f2014d7dd0713beec426760b68a.png","title":"{var:actionPrefix} Copy Task ID | {var:id}","arg":"id","subtitle":"id: {var:id} status:{var:status}"},{"imagefile":"3251a023d42f1f2014d7dd0713beec426760b68a.png","title":"{var:actionPrefix} Copy Description","arg":"description","subtitle":"{var:description}"},{"imagefile":"3251a023d42f1f2014d7dd0713beec426760b68a.png","title":"{var:actionPrefix} Copy Link","arg":"link","subtitle":"{var:url}"},{"imagefile":"f35a0d8361b4e2eb333edbf7c276c40dd2debfd3.png","title":"{var:actionPrefix} Settings","arg":"settings"},{"imagefile":"3251a023d42f1f2014d7dd0713beec426760b68a.png","title":"{var:goBack} Go Back","arg":"back","subtitle":"Start Over"}]</string>
+				<string>[{"imagefile":"icon.png","title":"Copy Task Name | {var:name}","arg":"name","subtitle":"id: {var:id} status:{var:status}"},{"imagefile":"icon.png","title":"{var:actionPrefix} Copy Task ID | {var:id}","arg":"id","subtitle":"id: {var:id} status:{var:status}"},{"imagefile":"icon.png","title":"{var:actionPrefix} Copy Description","arg":"description","subtitle":"{var:description}"},{"imagefile":"icon.png","title":"{var:actionPrefix} Copy Link","arg":"link","subtitle":"{var:url}"},{"imagefile":"settings.png","title":"{var:actionPrefix} Settings","arg":"settings","subtitle":"Open Settings"},{"imagefile":"icon.png","title":"{var:goBack} Go Back","arg":"back","subtitle":"Start Over"}]</string>
 				<key>matchmode</key>
 				<integer>0</integer>
 				<key>runningsubtext</key>
@@ -1325,25 +1321,6 @@
 			<string>alfred.workflow.input.listfilter</string>
 			<key>uid</key>
 			<string>3E9F4D9F-0DD5-4AF0-A307-925B1DDC4A78</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>externaltriggerid</key>
-				<string>_displayMenu</string>
-				<key>passinputasargument</key>
-				<false/>
-				<key>passvariables</key>
-				<true/>
-				<key>workflowbundleid</key>
-				<string>self</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.output.callexternaltrigger</string>
-			<key>uid</key>
-			<string>2B37A60D-8422-4823-9E1E-18DDFCF31489</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -1369,6 +1346,45 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>argument</key>
+				<string></string>
+				<key>passthroughargument</key>
+				<false/>
+				<key>variables</key>
+				<dict>
+					<key>route</key>
+					<string>{query}</string>
+				</dict>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.argument</string>
+			<key>uid</key>
+			<string>86589861-E174-49CF-86DA-057D729448E6</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>externaltriggerid</key>
+				<string>_displayMenu</string>
+				<key>passinputasargument</key>
+				<false/>
+				<key>passvariables</key>
+				<true/>
+				<key>workflowbundleid</key>
+				<string>self</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.callexternaltrigger</string>
+			<key>uid</key>
+			<string>2B37A60D-8422-4823-9E1E-18DDFCF31489</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>availableviaurlhandler</key>
 				<false/>
 				<key>triggerid</key>
@@ -1384,20 +1400,19 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argument</key>
-				<string></string>
-				<key>passthroughargument</key>
+				<key>externaltriggerid</key>
+				<string>testCul</string>
+				<key>passinputasargument</key>
 				<false/>
-				<key>variables</key>
-				<dict>
-					<key>route</key>
-					<string>{query}</string>
-				</dict>
+				<key>passvariables</key>
+				<true/>
+				<key>workflowbundleid</key>
+				<string>self</string>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.utility.argument</string>
+			<string>alfred.workflow.output.callexternaltrigger</string>
 			<key>uid</key>
-			<string>86589861-E174-49CF-86DA-057D729448E6</string>
+			<string>3F24E496-652D-43C1-B1D2-55570BB45B8E</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -1567,25 +1582,6 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>externaltriggerid</key>
-				<string>testCul</string>
-				<key>passinputasargument</key>
-				<false/>
-				<key>passvariables</key>
-				<true/>
-				<key>workflowbundleid</key>
-				<string>self</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.output.callexternaltrigger</string>
-			<key>uid</key>
-			<string>3F24E496-652D-43C1-B1D2-55570BB45B8E</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>argument</key>
 				<string>{var:url}</string>
 				<key>passthroughargument</key>
@@ -1597,25 +1593,6 @@
 			<string>alfred.workflow.utility.argument</string>
 			<key>uid</key>
 			<string>295152F4-326A-44EC-8FBD-798F3E8C5B9A</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>externaltriggerid</key>
-				<string>_dateMenu</string>
-				<key>passinputasargument</key>
-				<false/>
-				<key>passvariables</key>
-				<true/>
-				<key>workflowbundleid</key>
-				<string>self</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.output.callexternaltrigger</string>
-			<key>uid</key>
-			<string>3BC6B85D-CFA6-434F-A519-C4110F5FEA6F</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -1635,6 +1612,25 @@
 			<string>alfred.workflow.output.callexternaltrigger</string>
 			<key>uid</key>
 			<string>36E50719-DD44-4B80-B8BA-234BCF9B4945</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>externaltriggerid</key>
+				<string>_dateMenu</string>
+				<key>passinputasargument</key>
+				<false/>
+				<key>passvariables</key>
+				<true/>
+				<key>workflowbundleid</key>
+				<string>self</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.callexternaltrigger</string>
+			<key>uid</key>
+			<string>3BC6B85D-CFA6-434F-A519-C4110F5FEA6F</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -1894,10 +1890,6 @@ export adj_bonus=15
 				<false/>
 				<key>focusedappvariablename</key>
 				<string></string>
-				<key>hotkey</key>
-				<integer>0</integer>
-				<key>hotmod</key>
-				<integer>0</integer>
 				<key>leftcursor</key>
 				<false/>
 				<key>modsmode</key>
@@ -2095,10 +2087,6 @@ export adj_bonus=15
 				<false/>
 				<key>focusedappvariablename</key>
 				<string></string>
-				<key>hotkey</key>
-				<integer>0</integer>
-				<key>hotmod</key>
-				<integer>0</integer>
 				<key>leftcursor</key>
 				<false/>
 				<key>modsmode</key>
@@ -2444,10 +2432,6 @@ export adj_bonus=15
 				<false/>
 				<key>focusedappvariablename</key>
 				<string></string>
-				<key>hotkey</key>
-				<integer>0</integer>
-				<key>hotmod</key>
-				<integer>0</integer>
 				<key>leftcursor</key>
 				<false/>
 				<key>modsmode</key>
@@ -2819,9 +2803,9 @@ Made with ❤️ by Four13 Digital</string>
 			<key>colorindex</key>
 			<integer>3</integer>
 			<key>xpos</key>
-			<real>1570</real>
+			<real>1540</real>
 			<key>ypos</key>
-			<real>335</real>
+			<real>315</real>
 		</dict>
 		<key>3946C913-EAD4-41F5-A98C-FCA010D8245C</key>
 		<dict>
@@ -2846,27 +2830,27 @@ Made with ❤️ by Four13 Digital</string>
 			<key>colorindex</key>
 			<integer>10</integer>
 			<key>xpos</key>
-			<real>1290</real>
+			<real>1260</real>
 			<key>ypos</key>
-			<real>245</real>
+			<real>225</real>
 		</dict>
 		<key>3F24E496-652D-43C1-B1D2-55570BB45B8E</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>10</integer>
 			<key>xpos</key>
-			<real>1585</real>
+			<real>1555</real>
 			<key>ypos</key>
-			<real>305</real>
+			<real>285</real>
 		</dict>
 		<key>48EC5493-FFF5-46F8-AEE9-2DA193C24133</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>10</integer>
 			<key>xpos</key>
-			<real>1155</real>
+			<real>1125</real>
 			<key>ypos</key>
-			<real>245</real>
+			<real>225</real>
 		</dict>
 		<key>4F92F09E-B230-4A20-B69D-7F672A076620</key>
 		<dict>
@@ -2880,18 +2864,18 @@ Made with ❤️ by Four13 Digital</string>
 			<key>colorindex</key>
 			<integer>4</integer>
 			<key>xpos</key>
-			<real>1745</real>
+			<real>1715</real>
 			<key>ypos</key>
-			<real>155</real>
+			<real>135</real>
 		</dict>
 		<key>57565DD2-D636-4170-9830-4E872D9F2B47</key>
 		<dict>
 			<key>colorindex</key>
 			<integer>4</integer>
 			<key>xpos</key>
-			<real>1745</real>
+			<real>1715</real>
 			<key>ypos</key>
-			<real>185</real>
+			<real>165</real>
 		</dict>
 		<key>5B13BA71-098E-4B4F-A19B-FF2538432A04</key>
 		<dict>
@@ -2974,9 +2958,9 @@ Uses fuzzy search instead of Alfred filtering.</string>
 			<key>colorindex</key>
 			<integer>4</integer>
 			<key>xpos</key>
-			<real>1745</real>
+			<real>1715</real>
 			<key>ypos</key>
-			<real>215</real>
+			<real>195</real>
 		</dict>
 		<key>8522C263-C55D-4B63-BDF5-1324EE4A1B62</key>
 		<dict>
@@ -2992,9 +2976,9 @@ Uses fuzzy search instead of Alfred filtering.</string>
 			<key>colorindex</key>
 			<integer>10</integer>
 			<key>xpos</key>
-			<real>1425</real>
+			<real>1395</real>
 			<key>ypos</key>
-			<real>275</real>
+			<real>255</real>
 		</dict>
 		<key>89E3D445-87BF-4018-A2A3-766FD017A667</key>
 		<dict>
@@ -3077,9 +3061,9 @@ Uses fuzzy search instead of Alfred filtering.</string>
 			<key>colorindex</key>
 			<integer>10</integer>
 			<key>xpos</key>
-			<real>1475</real>
+			<real>1445</real>
 			<key>ypos</key>
-			<real>190</real>
+			<real>170</real>
 		</dict>
 		<key>A0CCA5BA-AA9E-4B49-84E1-CD10EC7B31C4</key>
 		<dict>
@@ -3093,9 +3077,9 @@ Uses fuzzy search instead of Alfred filtering.</string>
 			<key>colorindex</key>
 			<integer>1</integer>
 			<key>xpos</key>
-			<real>1610</real>
+			<real>1580</real>
 			<key>ypos</key>
-			<real>275</real>
+			<real>255</real>
 		</dict>
 		<key>A3F50AAE-76FE-4454-9D4E-21A7A8DD85B8</key>
 		<dict>
@@ -3271,9 +3255,9 @@ Uses fuzzy search instead of Alfred filtering.</string>
 			<key>colorindex</key>
 			<integer>4</integer>
 			<key>xpos</key>
-			<real>1745</real>
+			<real>1715</real>
 			<key>ypos</key>
-			<real>240</real>
+			<real>220</real>
 		</dict>
 		<key>FE1E9A69-E93D-42EC-86C8-482437F41C24</key>
 		<dict>
