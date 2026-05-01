@@ -717,6 +717,21 @@
 				<false/>
 			</dict>
 		</array>
+		<key>C5A4F1E2-1A1A-4A1A-9A1A-AAAA00000001</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>C5A4F1E2-2B2B-4B2B-9B2B-BBBB00000002</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>C5A4F1E2-2B2B-4B2B-9B2B-BBBB00000002</key>
+		<array/>
 		<key>DBB6F290-FBD1-4836-986E-ED788ACEDB58</key>
 		<array>
 			<dict>
@@ -1681,16 +1696,18 @@
 				<string>testCul</string>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.trigger.external</string>
+			<string>alfred.workflow.utility.debug</string>
 			<key>uid</key>
-			<string>E09B9161-F260-4D26-9561-D857E6C992DD</string>
+			<string>EF2F81E4-3650-4F24-ADCF-E2B8FA479EEF</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>alfredfiltersresults</key>
+				<key>argument</key>
+				<string>'{query}', {variables}</string>
+				<key>cleardebuggertext</key>
 				<false/>
 				<key>alfredfiltersresultsmatchmode</key>
 				<integer>0</integer>
@@ -1755,36 +1772,32 @@
 				<integer>3</integer>
 				<key>queuedelayimmediatelyinitially</key>
 				<true/>
-				<key>queuedelaymode</key>
-				<integer>0</integer>
-				<key>queuemode</key>
-				<integer>1</integer>
-				<key>runningsubtext</key>
-				<string>Loading...</string>
-				<key>script</key>
-				<string>export query="$1"
-export adj_bonus=15
-
-./fuzzy.py /usr/bin/python3 -O getTasks.py "$1"</string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>subtext</key>
-				<string>Keep on typing to filter...</string>
-				<key>title</key>
-				<string>List tasks created via Alfred</string>
-				<key>type</key>
-				<integer>0</integer>
-				<key>withspace</key>
-				<true/>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.input.scriptfilter</string>
+			<string>alfred.workflow.utility.debug</string>
 			<key>uid</key>
-			<string>89E3D445-87BF-4018-A2A3-766FD017A667</string>
+			<string>2F724848-A0EE-464D-84B4-9EEBF76F32FC</string>
 			<key>version</key>
-			<integer>3</integer>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>externaltriggerid</key>
+				<string>testCuconfig</string>
+				<key>passinputasargument</key>
+				<false/>
+				<key>passvariables</key>
+				<true/>
+				<key>workflowbundleid</key>
+				<string>self</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.callexternaltrigger</string>
+			<key>uid</key>
+			<string>3946C913-EAD4-41F5-A98C-FCA010D8245C</string>
+			<key>version</key>
+			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -2031,6 +2044,50 @@ export adj_bonus=15
 			<string>775C64CA-D611-4108-A589-FC069E952581</string>
 			<key>version</key>
 			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>availableviaurlhandler</key>
+				<false/>
+				<key>triggerid</key>
+				<string>_statusMenu</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.external</string>
+			<key>uid</key>
+			<string>8522C263-C55D-4B63-BDF5-1324EE4A1B62</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alignment</key>
+				<integer>0</integer>
+				<key>backgroundcolor</key>
+				<string></string>
+				<key>fadespeed</key>
+				<integer>0</integer>
+				<key>fillmode</key>
+				<integer>0</integer>
+				<key>font</key>
+				<string></string>
+				<key>ignoredynamicplaceholders</key>
+				<false/>
+				<key>largetypetext</key>
+				<string>{var:status}</string>
+				<key>textcolor</key>
+				<string></string>
+				<key>wrapat</key>
+				<integer>50</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.largetype</string>
+			<key>uid</key>
+			<string>B98AC8EE-87E4-4C93-92DC-DF2513FD32EE</string>
+			<key>version</key>
+			<integer>3</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -2612,6 +2669,93 @@ export adj_bonus=15
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<false/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>keyword</key>
+				<string>cusa</string>
+				<key>queuedelaycustom</key>
+				<integer>3</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string></string>
+				<key>script</key>
+				<string>/usr/bin/python3 -O sendAgentMessage.py --filter "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>Send a message to the Super Agent...</string>
+				<key>title</key>
+				<string>Send to Super Agent</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>C5A4F1E2-1A1A-4A1A-9A1A-AAAA00000001</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>/usr/bin/python3 -O sendAgentMessage.py --send "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>C5A4F1E2-2B2B-4B2B-9B2B-BBBB00000002</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string>cu:config </string>
+				<key>leftcursor</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.showalfred</string>
+			<key>uid</key>
+			<string>23F7EAD7-0C2F-4FE5-B43B-2CACBD0070F3</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string>🚀 Streamline your ClickUp workflow directly from Alfred!
@@ -3148,6 +3292,28 @@ Uses fuzzy search instead of Alfred filtering.</string>
 			<key>ypos</key>
 			<real>50</real>
 		</dict>
+		<key>C5A4F1E2-1A1A-4A1A-9A1A-AAAA00000001</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>4</integer>
+			<key>note</key>
+			<string>cusa &lt;message&gt; — preview before sending to Super Agent.</string>
+			<key>xpos</key>
+			<real>60</real>
+			<key>ypos</key>
+			<real>1500</real>
+		</dict>
+		<key>C5A4F1E2-2B2B-4B2B-9B2B-BBBB00000002</key>
+		<dict>
+			<key>colorindex</key>
+			<integer>4</integer>
+			<key>note</key>
+			<string>POSTs message to ClickUp v3 chat channel.</string>
+			<key>xpos</key>
+			<real>360</real>
+			<key>ypos</key>
+			<real>1500</real>
+		</dict>
 		<key>D45DBAB6-BA33-45FF-BC9F-922CD6C7188A</key>
 		<dict>
 			<key>colorindex</key>
@@ -3274,7 +3440,7 @@ Uses fuzzy search instead of Alfred filtering.</string>
 	<key>variablesdontexport</key>
 	<array/>
 	<key>version</key>
-	<string>1.14</string>
+	<string>1.14.0</string>
 	<key>webaddress</key>
 	<string>https://github.com/four13co/alfred-clickup-four13</string>
 </dict>
